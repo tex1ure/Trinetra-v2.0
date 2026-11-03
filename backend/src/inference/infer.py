@@ -1,4 +1,4 @@
-"""
+﻿"""
 infer.py -- Explainable Inference Pipeline for Project Trinetra.
 
 Provides:
@@ -15,6 +15,9 @@ import argparse
 import os
 import sys
 import time
+import threading
+
+_INFERENCE_LOCK = threading.Lock()
 import warnings
 from dataclasses import dataclass, field
 
@@ -42,9 +45,9 @@ from src.inference.xai import (
 )
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Constants
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _IMAGENET_MEAN = [0.485, 0.456, 0.406]
 _IMAGENET_STD  = [0.229, 0.224, 0.225]
 
@@ -62,14 +65,14 @@ _transform = transforms.Compose([
 ])
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Result dataclass
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @dataclass
 class InferenceResult:
     """Structured output returned by run_inference()."""
-    fake_probability: float                     # 0.0 – 1.0
+    fake_probability: float                     # 0.0 â€“ 1.0
     label: str                                  # "FAKE" or "REAL"
     face_crop: Image.Image | None = None        # Detected face (PIL RGB)
     gradcam_overlay: Image.Image | None = None  # Heatmap blended onto face
@@ -81,9 +84,9 @@ class InferenceResult:
     forensic_log: dict = field(default_factory=dict)
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Grad-CAM
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class GradCAM:
     """
@@ -113,12 +116,17 @@ class GradCAM:
 
     @torch.enable_grad()
     def generate(self, frame_tensor: torch.Tensor) -> np.ndarray:
+        with _INFERENCE_LOCK:
+            return self._generate_locked(frame_tensor)
+
+    @torch.enable_grad()
+    def _generate_locked(self, frame_tensor: torch.Tensor) -> np.ndarray:
         """
         Generate a Grad-CAM heatmap for a single frame.
 
         Parameters
         ----------
-        frame_tensor : (1, C, H, W)  — preprocessed, on DEVICE
+        frame_tensor : (1, C, H, W)  â€” preprocessed, on DEVICE
 
         Returns
         -------
@@ -151,9 +159,9 @@ class GradCAM:
         return cam
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Heatmap overlay
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def overlay_heatmap(face_rgb: np.ndarray, heatmap: np.ndarray, alpha: float = 0.5) -> Image.Image:
     """
@@ -172,9 +180,9 @@ def overlay_heatmap(face_rgb: np.ndarray, heatmap: np.ndarray, alpha: float = 0.
     return Image.fromarray(blended)
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Frame sampling
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def sample_frames(video_path: str, n_frames: int) -> list[np.ndarray]:
     """Uniformly sample n_frames RGB frames from the video."""
@@ -247,9 +255,9 @@ def sample_segments(
     return segments if segments else [sample_frames(video_path, frames_per_segment)]
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Face detection helpers
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _load_mtcnn():
     try:
@@ -263,7 +271,7 @@ def _load_mtcnn():
         )
     except ImportError:
         warnings.warn(
-            "facenet-pytorch not installed — using full-frame fallback. "
+            "facenet-pytorch not installed â€” using full-frame fallback. "
             "Install with: pip install facenet-pytorch"
         )
         return None
@@ -298,9 +306,9 @@ def _crop_face(
     return frame_rgb[y1:y2, x1:x2], lm, conf
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Master inference function
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def run_inference(
     file_path: str,
@@ -360,7 +368,7 @@ def run_inference(
             forensic_log={"media_type": "audio", "reality_defender": rd_result_dict}
         )
 
-    # ── Load model (cached, auto-detects legacy vs current architecture) ──
+    # â”€â”€ Load model (cached, auto-detects legacy vs current architecture) â”€â”€
     if "model" not in _model_cache or _model_cache.get("ckpt") != checkpoint_path:
         model = load_detector_from_checkpoint(checkpoint_path, DEVICE)
         _model_cache["model"] = model
@@ -369,13 +377,13 @@ def run_inference(
     model = _model_cache["model"]
     gradcam = _model_cache["gradcam"]
 
-    # ── Load MTCNN (cached) ──
+    # â”€â”€ Load MTCNN (cached) â”€â”€
     if "mtcnn" not in _model_cache:
         _model_cache["mtcnn"] = _load_mtcnn()
     mtcnn = _model_cache["mtcnn"]
 
 
-    # ── Face crop + landmark collection ──
+    # â”€â”€ Face crop + landmark collection â”€â”€
     face_crop_rgb = None
     all_landmarks: list[np.ndarray] = []
 
@@ -414,7 +422,7 @@ def run_inference(
         for crop in crops:
             t = _transform(crop).unsqueeze(0).to(DEVICE)
             with torch.no_grad():
-                inp = t.unsqueeze(1)   # (1, 1, C, H, W) → static path
+                inp = t.unsqueeze(1)   # (1, 1, C, H, W) â†’ static path
                 logit = model(inp)
                 prob = torch.sigmoid(logit).item()
             frame_scores.append(prob)
@@ -434,7 +442,7 @@ def run_inference(
 
         return blended, [round(s * 100, 2) for s in frame_scores]
 
-    # ── Run inference across all segments ──
+    # â”€â”€ Run inference across all segments â”€â”€
     if is_video:
         segments = sample_segments(file_path)
         segment_probs = []
@@ -447,7 +455,7 @@ def run_inference(
             all_frame_scores.extend(fs)
         per_frame_scores = all_frame_scores
 
-        # Ensemble: 0.6 × mean + 0.4 × max  (max catches localised manipulation)
+        # Ensemble: 0.6 Ã— mean + 0.4 Ã— max  (max catches localised manipulation)
         fake_prob = 0.6 * float(np.mean(segment_probs)) + 0.4 * float(np.max(segment_probs))
         fake_prob = round(min(1.0, fake_prob), 6)
 
@@ -467,7 +475,7 @@ def run_inference(
 
     label = "FAKE" if fake_prob >= FAKE_THRESHOLD else "REAL"
 
-    # ── Grad-CAM on first face ──
+    # â”€â”€ Grad-CAM on first face â”€â”€
     if face_crop_rgb is not None:
         first_crop = face_crop_rgb
     elif is_image:
@@ -483,7 +491,7 @@ def run_inference(
         gradcam_overlay = overlay_heatmap(first_crop, heatmap)
         face_pil = Image.fromarray(first_crop)
 
-    # ── XAI: Temporal Attention Rollout ──
+    # â”€â”€ XAI: Temporal Attention Rollout â”€â”€
     temporal_rollout = None
     if is_video and len(segments) > 0:
         # Re-score the first segment for LSTM hidden state
@@ -507,18 +515,18 @@ def run_inference(
                 frame_features, model.classifier,
             )
 
-    # ── XAI: Noise residual (ELA) ──
+    # â”€â”€ XAI: Noise residual (ELA) â”€â”€
     noise_residual_pil = None
     if first_crop is not None:
         noise_map = noise_residual_extraction(first_crop)
         noise_residual_pil = Image.fromarray(noise_map)
 
-    # ── XAI: Geometric Jitter ──
+    # â”€â”€ XAI: Geometric Jitter â”€â”€
     geo_jitter = None
     if is_video and len(all_landmarks) >= 2:
         geo_jitter = geometric_jitter_mapping(all_landmarks)
 
-    # ── Cloud: Reality Defender Analysis ──
+    # â”€â”€ Cloud: Reality Defender Analysis â”€â”€
     rd_result_dict = None
     from src.core.config import RD_ENABLED
     if RD_ENABLED:
@@ -573,12 +581,12 @@ def run_inference(
     )
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  CLI entry point
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def main():
-    parser = argparse.ArgumentParser(description="Trinetra — Explainable Deepfake Inference")
+    parser = argparse.ArgumentParser(description="Trinetra â€” Explainable Deepfake Inference")
     parser.add_argument("--input", required=True, help="Path to image or video file")
     parser.add_argument(
         "--checkpoint",
@@ -596,7 +604,7 @@ def main():
 
     pct = result.fake_probability * 100
     print(f"\n{'='*60}")
-    print(f"  VERDICT  : {'🔴 FAKE' if result.label == 'FAKE' else '🟢 REAL'}")
+    print(f"  VERDICT  : {'ðŸ”´ FAKE' if result.label == 'FAKE' else 'ðŸŸ¢ REAL'}")
     print(f"  Fake     : {pct:.2f}%  (threshold: {FAKE_THRESHOLD*100:.0f}%)")
     print(f"  Latency  : {result.forensic_log['inference_latency_ms']} ms")
 
@@ -606,7 +614,7 @@ def main():
         print(f"  Segments : {seg_str}")
         consistent = result.forensic_log.get("temporal_consistent")
         if consistent is False:
-            print("  ⚠  Temporal inconsistency — manipulation may be localised")
+            print("  âš   Temporal inconsistency â€” manipulation may be localised")
 
     if result.per_frame_scores:
         print(f"  Frames   : {result.per_frame_scores}")
@@ -619,3 +627,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

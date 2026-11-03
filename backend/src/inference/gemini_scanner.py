@@ -1,11 +1,11 @@
-import os
+﻿import os
 import time
 import io
 from PIL import Image
 from google import genai
 from src.core.config import GEMINI_API_KEYS
 
-# Maximum image dimension — keeps payloads small & fast
+# Maximum image dimension â€” keeps payloads small & fast
 MAX_IMAGE_DIM = 1024
 
 # Forensic prompt
@@ -78,7 +78,7 @@ Ask whether the image makes sense as a real captured moment:
 - Do accessories sit correctly on the body?
 - Is text, branding, or ornamentation structurally legible?
 - Are there objects that are present but do not function correctly?
-- Does any region look “almost right” but structurally off?
+- Does any region look â€œalmost rightâ€ but structurally off?
 
 5. Manipulation-specific signals
 Actively look for:
@@ -120,11 +120,11 @@ Important thresholds:
 - A single weird detail is not enough.
 - Smooth skin, flattering lighting, and makeup are not evidence of AI by themselves.
 - But do not dismiss a cluster of small inconsistencies just because each one is subtle.
-- If several regions each look “almost right” but fail in different ways, treat that as strong evidence of manipulation.
+- If several regions each look â€œalmost rightâ€ but fail in different ways, treat that as strong evidence of manipulation.
 
 Optimization goal:
 Bias toward catching advanced synthetic images, even when they are visually polished.
-Prefer “Manipulated” or “Inconclusive” over a false “Real” when the evidence is close.
+Prefer â€œManipulatedâ€ or â€œInconclusiveâ€ over a false â€œRealâ€ when the evidence is close.
 Still avoid overcalling based on beauty, filters, or photography style alone.
 
 Output format:
@@ -133,7 +133,7 @@ Output format:
 Real / AI-generated / Manipulated / Inconclusive
 
 **Confidence:**
-0–100
+0â€“100
 
 **Strongest Evidence:**
 - ...
@@ -164,12 +164,8 @@ class GeminiKeyManager:
         self.current_idx = 0
 
     def get_key(self) -> str:
-        """
-        Grabs the next available API key from the rotation.
-        
-        This ensures we spread the load across all provided keys, maximizing our 
-        uptime even when under heavy usage.
-        """
+        if not self.keys:
+            raise RuntimeError('No GEMINI_API_KEYS configured in .env.')
         key = self.keys[self.current_idx]
         self.current_idx = (self.current_idx + 1) % len(self.keys)
         return key
@@ -216,6 +212,8 @@ def analyze_with_gemini(image_path: str) -> str:
     - Robustness: It loops through all keys twice before finally giving up.
     """
     # First, make the image 'AI-friendly'
+    if not GEMINI_API_KEYS:
+        raise RuntimeError('GEMINI_API_KEYS is not configured in .env.')
     img = _compress_image(image_path)
 
     total_attempts = len(GEMINI_API_KEYS) * 2  # We'll try every key twice
@@ -268,3 +266,4 @@ def analyze_with_gemini(image_path: str) -> str:
         f"All Gemini keys exhausted or failed after {total_attempts} attempts. "
         f"The AI is currently unavailable. Last error: {last_error}"
     )
+
