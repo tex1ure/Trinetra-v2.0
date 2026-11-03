@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
 import {
@@ -25,7 +25,7 @@ import {
 } from '@/components/dashboard/SettingsPanel';
 import { analyzeMedia, checkHealth, type AnalysisResponse } from '@/lib/api';
 
-// ─── Tab config ─────────────────────────────────────────────────
+// â”€â”€â”€ Tab config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type TabId = 'result' | 'heatmap' | 'summary' | 'advanced';
 const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
   { id: 'result',  label: 'Result',  Icon: Sparkles },
@@ -34,7 +34,7 @@ const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
   { id: 'advanced', label: 'Advanced Scan', Icon: Sparkles },
 ];
 
-// ─── Victim Response tabs (FAKE only) ───────────────────────────
+// â”€â”€â”€ Victim Response tabs (FAKE only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type VictimTabId = 'alibi' | 'takedown' | 'blast-radius' | 'crisis';
 const VICTIM_TABS: { id: VictimTabId; label: string; Icon: React.ElementType; color: string }[] = [
   { id: 'alibi',        label: 'Digital Alibi',  Icon: MapPin, color: 'from-blue-500 to-indigo-600' },
@@ -43,7 +43,7 @@ const VICTIM_TABS: { id: VictimTabId; label: string; Icon: React.ElementType; co
   { id: 'crisis',       label: 'Crisis Support', Icon: Shield, color: 'from-pink-500 to-purple-600' },
 ];
 
-// ─── Login Screen ───────────────────────────────────────────────
+// â”€â”€â”€ Login Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function LoginScreen({
   onLogin,
   lang,
@@ -111,7 +111,7 @@ function LoginScreen({
   );
 }
 
-// ─── Empty / Waiting state ──────────────────────────────────────
+// â”€â”€â”€ Empty / Waiting state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function EmptyState({ hasFile, isAnalyzing }: { hasFile: boolean; isAnalyzing: boolean }) {
   return (
     <div className="rounded-3xl border border-dashed border-border bg-card/40 min-h-[500px] flex flex-col items-center justify-center text-center p-10">
@@ -126,7 +126,7 @@ function EmptyState({ hasFile, isAnalyzing }: { hasFile: boolean; isAnalyzing: b
         />
       </div>
       <h3 className="mt-8 font-display text-2xl font-bold tracking-tight">
-        {isAnalyzing ? 'Running detection…' : hasFile ? 'Ready to analyze' : 'Upload an image to begin'}
+        {isAnalyzing ? 'Running detectionâ€¦' : hasFile ? 'Ready to analyze' : 'Upload an image to begin'}
       </h3>
       <p className="text-muted-foreground mt-2 max-w-sm text-sm">
         {isAnalyzing
@@ -139,9 +139,9 @@ function EmptyState({ hasFile, isAnalyzing }: { hasFile: boolean; isAnalyzing: b
   );
 }
 
-// ─── Main Page ──────────────────────────────────────────────────
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function DashboardPage() {
-  const [isLoggedIn, setIsLoggedIn]         = useState(false);
+  const [isLoggedIn, setIsLoggedIn]         = useState(true);
   const [darkMode, setDarkMode]             = useState(false);
   const [lang, setLang]                     = useState<LangCode>('en');
   const [showLangMenu, setShowLangMenu]     = useState(false);
@@ -156,8 +156,9 @@ export default function DashboardPage() {
   const [history, setHistory]               = useState<HistoryItem[]>([]);
   const [victimTab, setVictimTab]           = useState<VictimTabId>('alibi');
   const [panicMode, setPanicMode]           = useState(false);
+  const [allowCloud, setAllowCloud]         = useState(false);
 
-  // Advanced scan state — lifted here so it survives tab switches
+  // Advanced scan state â€” lifted here so it survives tab switches
   const [advancedAnalysis, setAdvancedAnalysis] = useState<string | null>(null);
   const [advancedLoading, setAdvancedLoading]   = useState(false);
   const [advancedError, setAdvancedError]       = useState<string | null>(null);
@@ -203,7 +204,7 @@ export default function DashboardPage() {
     setResult(null);
     setError(null);
     try {
-      const r = await analyzeMedia(file);
+      const r = await analyzeMedia(file, allowCloud);
       setResult(r);
       setTab('result');
       // Record in history
@@ -235,7 +236,7 @@ export default function DashboardPage() {
 
   return (
     <div className={`min-h-screen bg-background ${panicMode ? 'panic-blur' : ''}`}>
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border">
         <div className="container flex items-center justify-between h-16">
 
@@ -257,7 +258,7 @@ export default function DashboardPage() {
             {/* Backend pill */}
             <span className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-mono text-muted-foreground">
               {backendOnline === null && <Loader2 className="h-3 w-3 animate-spin" />}
-              {backendOnline === true  && <><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />API connected · v1.0</>}
+              {backendOnline === true  && <><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />API connected Â· v1.0</>}
               {backendOnline === false && <><span className="h-1.5 w-1.5 rounded-full bg-red-500" />API offline</>}
             </span>
 
@@ -330,7 +331,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* ── Main ── */}
+      {/* â”€â”€ Main â”€â”€ */}
       <main className="container py-8 md:py-12">
         {/* Page header */}
         <div className="mb-8">
@@ -350,6 +351,8 @@ export default function DashboardPage() {
               fileName={file?.name ?? null}
               fileSize={file?.size ?? null}
               isAnalyzing={isAnalyzing}
+              allowCloud={allowCloud}
+              onToggleCloud={setAllowCloud}
               onFile={handleFile}
               onClear={handleClear}
               onAnalyze={handleAnalyze}
@@ -404,7 +407,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* ── Victim Response Toolkit (FAKE verdict only) ── */}
+          {/* â”€â”€ Victim Response Toolkit (FAKE verdict only) â”€â”€ */}
           {result && result.primary_verdict === 'FAKE' && (
             <div className="lg:col-span-2 mt-4">
               {/* Section header */}
@@ -416,7 +419,7 @@ export default function DashboardPage() {
                   <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tighter">
                     Victim Response <span className="text-gradient-brand">Toolkit</span>
                   </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Fight back — prove your truth, take it down, track the spread, get support</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Fight back â€” prove your truth, take it down, track the spread, get support</p>
                 </div>
               </div>
 
@@ -458,7 +461,7 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* ── Settings Drawer ── */}
+      {/* â”€â”€ Settings Drawer â”€â”€ */}
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
@@ -479,3 +482,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

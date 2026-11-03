@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles, Loader2, AlertCircle, ShieldAlert, ShieldCheck, ShieldQuestion,
@@ -17,7 +17,7 @@ interface AdvancedScanTabProps {
   setError: (v: string | null) => void;
 }
 
-// ── Section config ──
+// â”€â”€ Section config â”€â”€
 const SECTION_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; border: string }> = {
   verdict:      { icon: ShieldAlert,    color: 'text-brand-orange',    bg: 'bg-brand-orange/10', border: 'border-brand-orange/20' },
   confidence:   { icon: Target,         color: 'text-blue-500',        bg: 'bg-blue-500/10',     border: 'border-blue-500/20' },
@@ -29,7 +29,7 @@ const SECTION_CONFIG: Record<string, { icon: React.ElementType; color: string; b
   finalrule:    { icon: ShieldCheck,    color: 'text-indigo-500',      bg: 'bg-indigo-500/10',   border: 'border-indigo-500/20' },
 };
 
-// ── Robust parser: matches **Header:** patterns anywhere in a line ──
+// â”€â”€ Robust parser: matches **Header:** patterns anywhere in a line â”€â”€
 interface ParsedSection {
   key: string;
   title: string;
@@ -87,7 +87,7 @@ function parseAnalysis(raw: string): ParsedSection[] {
   return sections;
 }
 
-// ── Verdict badge ──
+// â”€â”€ Verdict badge â”€â”€
 function VerdictBadge({ verdict }: { verdict: string }) {
   const lower = verdict.toLowerCase();
   const isBad = lower.includes('manipulated') || lower.includes('fake') || lower.includes('ai-generated') || lower.includes('ai generated') || lower.includes('deepfake');
@@ -125,7 +125,7 @@ function VerdictBadge({ verdict }: { verdict: string }) {
   );
 }
 
-// ── Confidence bar ──
+// â”€â”€ Confidence bar â”€â”€
 function ConfidenceBar({ raw }: { raw: string }) {
   const num = parseInt(raw.replace(/[^0-9]/g, ''), 10);
   if (isNaN(num)) return <span className="text-foreground font-bold text-lg">{raw}</span>;
@@ -153,12 +153,12 @@ function ConfidenceBar({ raw }: { raw: string }) {
   );
 }
 
-// ── Section card ──
+// â”€â”€ Section card â”€â”€
 function SectionCard({ section, index }: { section: ParsedSection; index: number }) {
   const config = SECTION_CONFIG[section.key] || SECTION_CONFIG['strongest'];
   const Icon = config.icon;
 
-  // Verdict — big hero card
+  // Verdict â€” big hero card
   if (section.key === 'verdict') {
     return (
       <motion.div
@@ -171,7 +171,7 @@ function SectionCard({ section, index }: { section: ParsedSection; index: number
     );
   }
 
-  // Confidence — with animated bar
+  // Confidence â€” with animated bar
   if (section.key === 'confidence') {
     return (
       <motion.div
@@ -210,14 +210,15 @@ function SectionCard({ section, index }: { section: ParsedSection; index: number
   );
 }
 
-// ── Main component ──
+// â”€â”€ Main component â”€â”€
 export function AdvancedScanTab({ file, analysis, setAnalysis, isLoading, setIsLoading, error, setError }: AdvancedScanTabProps) {
+  const [cloudConsent, setCloudConsent] = React.useState(false);
 
   const handleScan = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await advanceScan(file);
+      const result = await advanceScan(file, cloudConsent);
       setAnalysis(result.analysis);
     } catch (err: any) {
       setError(err.message || 'Advanced scan failed.');
@@ -246,9 +247,21 @@ export function AdvancedScanTab({ file, analysis, setAnalysis, isLoading, setIsL
             <p className="text-muted-foreground mb-4 max-w-sm text-sm">
               Run an advanced multimodal scan to inspect every visible region for signs of AI generation, face swapping, body editing, and synthetic reconstruction.
             </p>
+            <label className="flex items-start gap-2.5 max-w-md text-left mb-4 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={cloudConsent}
+                onChange={(e) => setCloudConsent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-brand-orange shrink-0"
+              />
+              <span className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">External Cloud Consent:</strong> I understand this sends a GPS/EXIF-stripped copy of my image to Google&apos;s Gemini API for multimodal inspection. Do not use with intimate or confidential imagery on free-tier API keys.
+              </span>
+            </label>
             <button
               onClick={handleScan}
-              className="px-6 py-2.5 rounded-xl bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors flex items-center gap-2 shadow-glow"
+              disabled={!cloudConsent}
+              className="px-6 py-2.5 rounded-xl bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors flex items-center gap-2 shadow-glow disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Sparkles className="h-4 w-4" /> Start Advanced Scan
             </button>
@@ -316,3 +329,4 @@ export function AdvancedScanTab({ file, analysis, setAnalysis, isLoading, setIsL
     </div>
   );
 }
+

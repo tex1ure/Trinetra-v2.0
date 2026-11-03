@@ -1,36 +1,23 @@
-/**
- * api.ts — Frontend API service layer for Trinetra backend.
- * 
- * Communicates with the FastAPI backend at /api/backend/* (proxied by Next.js rewrites).
- * 
- * Backend endpoints:
- *   POST /analyze  — Send base64-encoded media for deepfake analysis
- *   GET  /health   — Check backend health status
- */
-
-const API_BASE = '/api/backend';
-
-// ── Types matching the FastAPI AnalysisResponse model ──
+﻿const API_BASE = '/api/backend';
 
 export interface AnalysisResponse {
   primary_verdict: 'FAKE' | 'REAL';
-  confidence_score: number;    // 0-100
+  confidence_score: number;
   local_label: string;
-  local_confidence: number;    // 0-100
+  local_confidence: number;
   rd_status: string | null;
   rd_score: number | null;
   forensic_summary: string;
   latency_ms: number;
   face_crop_base64?: string;
   gradcam_base64?: string;
+  exif_data?: Record<string, string | number> | null;
 }
 
 export interface HealthResponse {
   status: string;
   model: string;
 }
-
-// ── Health Check ──
 
 export async function checkHealth(): Promise<HealthResponse> {
   const res = await fetch(`${API_BASE}/health`, {
@@ -41,11 +28,6 @@ export async function checkHealth(): Promise<HealthResponse> {
   return res.json();
 }
 
-// ── Analyze Media ──
-
-/**
- * Convert a File object to a base64 data URL string.
- */
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -55,16 +37,8 @@ export function fileToBase64(file: File): Promise<string> {
   });
 }
 
-/**
- * Send a file for deepfake analysis.
- * Encodes the file as base64 and POSTs to the /analyze endpoint.
- * Calls the backend directly (not through Next.js proxy) to avoid
- * the proxy's default timeout which is too short for ML inference.
- */
-export async function analyzeMedia(file: File): Promise<AnalysisResponse> {
+export async function analyzeMedia(file: File, allowCloud: boolean = false): Promise<AnalysisResponse> {
   const base64Data = await fileToBase64(file);
-
-  // 120 second timeout — ML inference can take 30-50s
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120_000);
 
@@ -72,7 +46,7 @@ export async function analyzeMedia(file: File): Promise<AnalysisResponse> {
     const res = await fetch('http://127.0.0.1:8000/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ base64_data: base64Data }),
+      body: JSON.stringify({ base64_data: base64Data, allow_cloud: allowCloud }),
       signal: controller.signal,
     });
 
@@ -84,7 +58,7 @@ export async function analyzeMedia(file: File): Promise<AnalysisResponse> {
     return res.json();
   } catch (err: any) {
     if (err.name === 'AbortError') {
-      throw new Error('Analysis timed out. The image may be too complex — try a smaller file.');
+      throw new Error('Analysis timed out. Try a smaller file.');
     }
     throw err;
   } finally {
@@ -92,39 +66,12 @@ export async function analyzeMedia(file: File): Promise<AnalysisResponse> {
   }
 }
 
-/**
- * Subscribe a user's email to the newsletter.
- */
-export async function subscribeToNewsletter(email: string): Promise<{ status: string, message: string }> {
-  const res = await fetch(`${API_BASE}/subscribe`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  });
-
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({ detail: 'Subscription failed' }));
-    throw new Error(errorBody.detail || `Subscription failed: ${res.status}`);
-  }
-
-  return res.json();
-}
-
-// ── Advance Scan ──
-
 export interface AdvanceScanResponse {
   analysis: string;
 }
 
-/**
- * Send a file for advanced multimodal forensic analysis via Gemini.
- * Calls the backend directly (not through Next.js proxy) to avoid
- * the proxy's default timeout which is too short for Gemini calls.
- */
-export async function advanceScan(file: File): Promise<AdvanceScanResponse> {
+export async function advanceScan(file: File, consentConfirmed: boolean = false): Promise<AdvanceScanResponse> {
   const base64Data = await fileToBase64(file);
-
-  // 120 second timeout — Gemini can take a while with retries
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120_000);
 
@@ -132,7 +79,7 @@ export async function advanceScan(file: File): Promise<AdvanceScanResponse> {
     const res = await fetch('http://127.0.0.1:8000/advance-scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ base64_data: base64Data }),
+      body: JSON.stringify({ base64_data: base64Data, consent_confirmed: consentConfirmed }),
       signal: controller.signal,
     });
 
@@ -144,7 +91,7 @@ export async function advanceScan(file: File): Promise<AdvanceScanResponse> {
     return res.json();
   } catch (err: any) {
     if (err.name === 'AbortError') {
-      throw new Error('Analysis timed out. The image may be too complex — try a smaller file.');
+      throw new Error('Analysis timed out. Try a smaller file.');
     }
     throw err;
   } finally {

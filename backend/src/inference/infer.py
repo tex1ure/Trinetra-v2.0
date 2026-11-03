@@ -314,6 +314,7 @@ def run_inference(
     file_path: str,
     checkpoint_path: str | None = None,
     *,
+    allow_cloud: bool = False,
     _model_cache: dict = {},
 ) -> InferenceResult:
     """
@@ -346,7 +347,7 @@ def run_inference(
         label = "AUDIO"
         rd_result_dict = None
         from src.core.config import RD_ENABLED
-        if RD_ENABLED:
+        if RD_ENABLED and allow_cloud:
             try:
                 from src.inference.reality_defender import analyze_with_rd
                 rd_res = analyze_with_rd(file_path)
@@ -529,7 +530,7 @@ def run_inference(
     # â”€â”€ Cloud: Reality Defender Analysis â”€â”€
     rd_result_dict = None
     from src.core.config import RD_ENABLED
-    if RD_ENABLED:
+    if RD_ENABLED and allow_cloud:
         try:
             from src.inference.reality_defender import analyze_with_rd
             rd_res = analyze_with_rd(file_path)
@@ -627,4 +628,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

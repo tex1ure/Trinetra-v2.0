@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 """
-api.py — FastAPI Backend for Trinetra Chrome Extension and Dashboard.
-Hardened for ephemeral file safety, payload size limits, and CORS security.
+api.py — Privacy-First FastAPI Backend for Trinetra.
+Strips GPS/PII EXIF metadata on ingestion and enforces Local-Only inference by default.
 """
 
 import os
@@ -51,8 +51,37 @@ def safe_round(val: Any, digits: int = 2) -> float:
     except (TypeError, ValueError, OverflowError):
         return 0.0
 
+# Only non-identifying software/encoding tags are kept for forensic inspection.
+# GPS, Make, Model, SerialNumber, Artist, OwnerName, and MakerNote are strictly dropped.
+SAFE_FORENSIC_EXIF_TAGS = {"Software", "ProcessingSoftware", "ColorSpace", "ExifImageWidth", "ExifImageHeight"}
+
+def sanitize_and_strip_image(image_bytes: bytes, ext: str) -> tuple[bytes, Optional[dict]]:
+    """
+    Extracts only non-identifying software tags and returns a clean image byte stream
+    with all GPS coordinates, camera serials, and personal EXIF metadata stripped.
+    """
+    safe_exif: dict[str, Any] = {}
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as img:
+            raw_exif = img.getexif() if hasattr(img, "getexif") else None
+            if raw_exif:
+                for tag_id, value in raw_exif.items():
+                    tag_name = str(ExifTags.TAGS.get(tag_id, tag_id))
+                    if tag_name in SAFE_FORENSIC_EXIF_TAGS and isinstance(value, (str, int, float)):
+                        safe_exif[tag_name] = value
+
+            # Re-encode pixel data without EXIF/GPS/XMP metadata
+            clean_buffer = io.BytesIO()
+            rgb_img = img.convert("RGB") if img.mode not in ("RGB", "L") else img.copy()
+            fmt = "JPEG" if ext in (".jpg", ".jpeg") else "PNG" if ext == ".png" else "WEBP" if ext == ".webp" else "PNG"
+            rgb_img.save(clean_buffer, format=fmt, quality=95)
+            return clean_buffer.getvalue(), (safe_exif if safe_exif else None)
+    except Exception:
+        # If not an image (e.g., video file), return original bytes and no EXIF
+        return image_bytes, None
+
 DEMO_MODE = False
-MAX_BASE64_CHARS = 35_000_000  # ~25 MB max payload to prevent DoS memory exhaustion
+MAX_BASE64_CHARS = 35_000_000  # ~25 MB max payload
 
 app = FastAPI(title="Trinetra Local API")
 
@@ -75,6 +104,7 @@ app.add_middleware(
 
 class AnalysisRequest(BaseModel):
     base64_data: str = Field(..., max_length=MAX_BASE64_CHARS)
+    allow_cloud: bool = Field(default=False, description="Explicit user opt-in for third-party cloud verification")
 
 class AnalysisResponse(BaseModel):
     primary_verdict: str
@@ -91,33 +121,16 @@ class AnalysisResponse(BaseModel):
 
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_image(request: AnalysisRequest):
-    if DEMO_MODE:
-        import random
-        await asyncio.sleep(random.uniform(0.8, 2.0))
-        is_fake_demo = random.random() > 0.35
-        fake_prob = random.uniform(72.0, 96.5) if is_fake_demo else random.uniform(8.0, 28.0)
-        local_label = "FAKE" if is_fake_demo else "REAL"
-        local_conf = fake_prob if is_fake_demo else (100.0 - fake_prob)
-        return AnalysisResponse(
-            primary_verdict=local_label,
-            confidence_score=safe_round(local_conf, 2),
-            local_label=local_label,
-            local_confidence=safe_round(local_conf, 2),
-            rd_status="SUSPICIOUS" if is_fake_demo else "AUTHENTIC",
-            rd_score=safe_round(random.uniform(0.70, 0.95) if is_fake_demo else random.uniform(0.05, 0.20), 4),
-            forensic_summary="DEMO MODE: Simulated deepfake forensic finding.",
-            latency_ms=safe_round(random.uniform(800, 3200), 2),
-        )
-
     temp_path: Optional[str] = None
     try:
         header, data = request.base64_data.split(",", 1) if "," in request.base64_data else (None, request.base64_data)
         try:
-            image_bytes = base64.b64decode(data, validate=True)
+            raw_bytes = base64.b64decode(data, validate=True)
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid base64 media payload.")
 
         ext = ".png"
+        is_image_mime = True
         if header:
             mime_map = {
                 "video/mp4": ".mp4", "video/avi": ".avi", "video/mov": ".mov",
@@ -128,7 +141,14 @@ async def analyze_image(request: AnalysisRequest):
             for mime, extension in mime_map.items():
                 if mime in header.lower():
                     ext = extension
+                    is_image_mime = mime.startswith("image/")
                     break
+
+        # Strip GPS and personal EXIF metadata before writing to disk or sending to cloud
+        if is_image_mime:
+            clean_bytes, exif_extracted = sanitize_and_strip_image(raw_bytes, ext)
+        else:
+            clean_bytes, exif_extracted = raw_bytes, None
 
         temp_dir = os.path.join(_script_dir, "tmp_api")
         os.makedirs(temp_dir, exist_ok=True)
@@ -136,22 +156,7 @@ async def analyze_image(request: AnalysisRequest):
         temp_path = os.path.join(temp_dir, temp_filename)
 
         with open(temp_path, "wb") as f:
-            f.write(image_bytes)
-
-        exif_extracted = None
-        try:
-            with Image.open(temp_path) as img:
-                exif_data_raw = img.getexif() if hasattr(img, "getexif") else None
-                if exif_data_raw:
-                    exif_extracted = {}
-                    for tag_id, value in exif_data_raw.items():
-                        tag_name = str(ExifTags.TAGS.get(tag_id, tag_id))
-                        if tag_name in ("GPSInfo", "MakerNote", "UserComment"):
-                            continue  # Strip sensitive location/device serial tags from response
-                        if isinstance(value, (str, int, float)):
-                            exif_extracted[tag_name] = value
-        except Exception:
-            pass
+            f.write(clean_bytes)
 
         checkpoint_path = os.path.join(MODEL_DIR, "best_model.pt")
         if not os.path.exists(checkpoint_path):
@@ -162,7 +167,12 @@ async def analyze_image(request: AnalysisRequest):
 
         start_time = time.perf_counter()
         try:
-            result: InferenceResult = await asyncio.to_thread(run_inference, temp_path, checkpoint_path)
+            result: InferenceResult = await asyncio.to_thread(
+                run_inference,
+                temp_path,
+                checkpoint_path,
+                allow_cloud=request.allow_cloud,
+            )
         except Exception as inference_err:
             raise HTTPException(status_code=500, detail=f"Inference failed: {inference_err}")
         end_time = time.perf_counter()
@@ -172,7 +182,7 @@ async def analyze_image(request: AnalysisRequest):
         local_conf = pct if local_label == "FAKE" else (100 - pct)
 
         rd = result.rd_result
-        rd_status = rd.get("status") if rd else "DISABLED"
+        rd_status = rd.get("status") if rd else ("LOCAL_ONLY" if not request.allow_cloud else "DISABLED")
         rd_score_raw = rd.get("score") if rd else None
         rd_score = float(rd_score_raw) if rd_score_raw is not None else 0.0
 
@@ -183,13 +193,12 @@ async def analyze_image(request: AnalysisRequest):
         elif rd and rd_status == "AUTHENTIC" and rd_score_raw is not None:
             primary_verdict = "REAL"
             confidence_score = (1.0 - rd_score) * 100
-            summary = "CLOUD VERDICT: AUTHENTIC. High confidence cloud analysis confirmed media is real."
+            summary = "CLOUD VERDICT: AUTHENTIC. Cloud verification confirmed media is real."
         else:
             primary_verdict = local_label
             confidence_score = local_conf
-            rd_err = f": {rd.get('error')}" if rd and rd.get("error") else ""
-            rd_reason = f" ({rd_status}{rd_err})" if rd_status and rd_status not in ["DISABLED", "None"] else ""
-            summary = f"LOCAL VERDICT: {local_label} ({local_conf:.1f}%). Cloud verification unavailable{rd_reason}."
+            mode_note = "Processed 100% locally on-device (Cloud sharing disabled)." if not request.allow_cloud else "Cloud verification unavailable."
+            summary = f"LOCAL VERDICT: {local_label} ({local_conf:.1f}%). {mode_note}"
 
         def img_to_base64(img: Any) -> str:
             if isinstance(img, np.ndarray):
@@ -225,30 +234,29 @@ async def analyze_image(request: AnalysisRequest):
             except OSError:
                 pass
 
-class SubscriptionRequest(BaseModel):
-    email: str = Field(..., max_length=254)
-
-@app.post("/subscribe")
-async def subscribe(request: SubscriptionRequest):
-    return {"status": "success", "message": f"[SIMULATION] Subscription recorded for {request.email}."}
-
 @app.get("/health")
 async def health_check():
-    return {"status": "online", "model": "EfficientNet-V2-S"}
+    return {"status": "online", "model": "EfficientNet-V2-S", "privacy_mode": "local_first"}
 
 class AdvanceScanRequest(BaseModel):
     base64_data: str = Field(..., max_length=MAX_BASE64_CHARS)
+    consent_confirmed: bool = Field(default=False)
 
 class AdvanceScanResponse(BaseModel):
     analysis: str
 
 @app.post("/advance-scan", response_model=AdvanceScanResponse)
 async def advance_scan(request: AdvanceScanRequest):
+    if not request.consent_confirmed:
+        raise HTTPException(
+            status_code=400,
+            detail="Explicit user consent is required before sending media to external Gemini cloud servers."
+        )
     temp_path: Optional[str] = None
     try:
         header, data = request.base64_data.split(",", 1) if "," in request.base64_data else (None, request.base64_data)
         try:
-            image_bytes = base64.b64decode(data, validate=True)
+            raw_bytes = base64.b64decode(data, validate=True)
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid base64 image payload.")
 
@@ -263,13 +271,16 @@ async def advance_scan(request: AdvanceScanRequest):
                     ext = extension
                     break
 
+        # Strip all EXIF/GPS metadata before sending image to Google Gemini
+        clean_bytes, _ = sanitize_and_strip_image(raw_bytes, ext)
+
         temp_dir = os.path.join(_script_dir, "tmp_api")
         os.makedirs(temp_dir, exist_ok=True)
         temp_filename = f"gemini_{uuid.uuid4().hex}{ext}"
         temp_path = os.path.join(temp_dir, temp_filename)
 
         with open(temp_path, "wb") as f:
-            f.write(image_bytes)
+            f.write(clean_bytes)
 
         analysis_text = await asyncio.to_thread(analyze_with_gemini, temp_path)
         return AdvanceScanResponse(analysis=analysis_text)

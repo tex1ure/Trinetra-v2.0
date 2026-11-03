@@ -1,30 +1,27 @@
+﻿# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Ephemeral User Media Buffers (NEVER COMMIT)
+backend/tmp_api/
+backend/processed_data/
+tmp_api/
+processed_data/
+
+# ML Weights & Checkpoints
+backend/model/*.pt
+backend/model/checkpoints/
+*.pt
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Node / Next.js
 node_modules/
 .next/
 out/
-build/
-dist/
-*.log
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.coverage
-htmlcov/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
-venv/
-env/
-.venv/
-.env/
-*.sqlite3
-db.sqlite3
-*.egg-info/
-*.DS_Store
-*.pt
-best_model.pt
-model/
-best_model/
+*.tsbuildinfo
