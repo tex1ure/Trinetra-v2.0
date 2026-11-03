@@ -1,11 +1,11 @@
-"""
-train.py — Training loop for Project Trinetra.
+﻿"""
+train.py â€” Training loop for Project Trinetra.
 
 Hardware-aware optimizations for RTX 4060 (8 GB VRAM):
-  • Mixed precision   (torch.amp)
-  • Gradient accumulation  (simulate large batches)
-  • Epoch checkpointing    (resume on crash)
-  • ReduceLROnPlateau scheduler
+  â€¢ Mixed precision   (torch.amp)
+  â€¢ Gradient accumulation  (simulate large batches)
+  â€¢ Epoch checkpointing    (resume on crash)
+  â€¢ ReduceLROnPlateau scheduler
 
 Usage:
     python train.py
@@ -23,7 +23,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from sklearn.metrics import f1_score, precision_score, recall_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from torch.amp import GradScaler, autocast
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from tqdm import tqdm
@@ -46,9 +46,9 @@ from src.data.dataset import DeepfakeDataset, build_dataloaders
 from src.models.model import DeepfakeDetector
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Checkpoint helpers
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def save_checkpoint(
     model: nn.Module,
@@ -68,7 +68,7 @@ def save_checkpoint(
         "scaler_state_dict": scaler.state_dict(),
         "best_val_loss": best_val_loss,
     }, path)
-    print(f"  💾 Checkpoint saved → {path}")
+    print(f"  ðŸ’¾ Checkpoint saved â†’ {path}")
 
 
 def load_checkpoint(
@@ -84,7 +84,7 @@ def load_checkpoint(
     optimizer.load_state_dict(ckpt["optimizer_state_dict"])
     scheduler.load_state_dict(ckpt["scheduler_state_dict"])
     scaler.load_state_dict(ckpt["scaler_state_dict"])
-    print(f"  ✅ Resumed from {path}  (epoch {ckpt['epoch']+1})")
+    print(f"  âœ… Resumed from {path}  (epoch {ckpt['epoch']+1})")
     return ckpt["epoch"] + 1, ckpt["best_val_loss"]
 
 
@@ -98,11 +98,11 @@ def find_latest_checkpoint(ckpt_dir: str) -> str | None:
     return os.path.join(ckpt_dir, ckpts[-1]) if ckpts else None
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Sub-batch forward helper
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-# Label smoothing factor — softens hard 0/1 targets for better generalization
+# Label smoothing factor â€” softens hard 0/1 targets for better generalization
 LABEL_SMOOTHING = 0.05
 
 def forward_subbatch(
@@ -127,7 +127,7 @@ def forward_subbatch(
     frames = frames.to(DEVICE, non_blocking=True)
     labels = labels.to(DEVICE, non_blocking=True)
 
-    # Label smoothing: 0 → 0.05, 1 → 0.95
+    # Label smoothing: 0 â†’ 0.05, 1 â†’ 0.95
     smooth_labels = labels * (1.0 - LABEL_SMOOTHING) + (1.0 - labels) * LABEL_SMOOTHING
 
     with autocast(device_type="cuda"):
@@ -139,9 +139,9 @@ def forward_subbatch(
     return loss, int(correct), len(labels)
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Training epoch
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def train_one_epoch(
     model: nn.Module,
@@ -203,9 +203,9 @@ def train_one_epoch(
     return avg_loss, accuracy
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Validation epoch
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @torch.no_grad()
 def validate(
@@ -271,20 +271,20 @@ def validate(
     return avg_loss, accuracy, metrics
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Main
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def main(args):
     print("=" * 60)
-    print("  Project Trinetra — Training")
+    print("  Project Trinetra â€” Training")
     print(f"  Device    : {DEVICE}")
-    print(f"  Batch     : {BATCH_SIZE}  ×  {ACCUM_STEPS} accum  =  {BATCH_SIZE * ACCUM_STEPS} effective")
+    print(f"  Batch     : {BATCH_SIZE}  Ã—  {ACCUM_STEPS} accum  =  {BATCH_SIZE * ACCUM_STEPS} effective")
     print(f"  Epochs    : {EPOCHS}")
     print(f"  LR        : {LR}")
     print("=" * 60)
 
-    # ── 1. Data split ──
+    # â”€â”€ 1. Data split â”€â”€
     metadata_csv = args.metadata
     full_ds = DeepfakeDataset(metadata_csv, PROCESSED_DIR)
     labels = [s["label"] for s in full_ds.samples]
@@ -293,15 +293,18 @@ def main(args):
     n_total = len(full_ds)
     if n_total < MIN_SAMPLES:
         raise ValueError(
-            f"[ERROR] Dataset has only {n_total} sample(s) — need at least {MIN_SAMPLES}.\n"
+            f"[ERROR] Dataset has only {n_total} sample(s) â€” need at least {MIN_SAMPLES}.\n"
             f"  Run preprocess.py on a proper dataset first."
         )
-    train_idx, val_idx = train_test_split(
-        list(range(n_total)),
-        test_size=VAL_SPLIT,
-        stratify=labels,
-        random_state=RANDOM_SEED,
-    )
+    groups = [s.get("source_file", str(i)) for i, s in enumerate(full_ds.samples)]
+    if len(set(groups)) >= 2:
+        gss = GroupShuffleSplit(n_splits=1, test_size=VAL_SPLIT, random_state=RANDOM_SEED)
+        train_idx, val_idx = next(gss.split(range(n_total), labels, groups=groups))
+        train_idx, val_idx = list(train_idx), list(val_idx)
+    else:
+        train_idx, val_idx = train_test_split(
+            list(range(n_total)), test_size=VAL_SPLIT, stratify=labels, random_state=RANDOM_SEED
+        )
     train_labels = [labels[i] for i in train_idx]
     n_real = train_labels.count(0)
     n_fake = train_labels.count(1)
@@ -311,13 +314,13 @@ def main(args):
         train_idx, val_idx, metadata_csv, PROCESSED_DIR,
     )
 
-    # ── 2. Model, optimizer, scheduler, scaler ──
+    # â”€â”€ 2. Model, optimizer, scheduler, scaler â”€â”€
     model = DeepfakeDetector().to(DEVICE)
 
     # Weighted loss to counter class imbalance (sampler balances batches,
     # but loss weighting further corrects gradient magnitude)
     pos_weight = torch.tensor([n_real / n_fake]).to(DEVICE)
-    print(f"  pos_weight : {pos_weight.item():.4f} (penalises REAL misclass {n_fake/n_real:.1f}× more)")
+    print(f"  pos_weight : {pos_weight.item():.4f} (penalises REAL misclass {n_fake/n_real:.1f}Ã— more)")
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     # Only optimize parameters that require grad
@@ -326,7 +329,7 @@ def main(args):
     scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3, verbose=True)
     scaler = GradScaler()
 
-    # ── 3. Resume / Fine-tune from checkpoint ──
+    # â”€â”€ 3. Resume / Fine-tune from checkpoint â”€â”€
     start_epoch = 0
     best_val_loss = float("inf")
 
@@ -360,7 +363,7 @@ def main(args):
         finetune_lr = LR / 10
         for pg in optimizer.param_groups:
             pg["lr"] = finetune_lr
-        print(f"  ✅ Fine-tuning from {args.finetune}")
+        print(f"  âœ… Fine-tuning from {args.finetune}")
         print(f"     LR reduced to {finetune_lr:.2e} for fine-tuning")
         print(f"     Epoch counter reset to 1 (optimizer/scheduler fresh)")
     elif args.resume:
@@ -370,14 +373,14 @@ def main(args):
                 latest, model, optimizer, scheduler, scaler,
             )
         else:
-            print("  ⚠ No checkpoint found, starting from scratch.")
+            print("  âš  No checkpoint found, starting from scratch.")
 
-    # ── 4. Training loop ──
+    # â”€â”€ 4. Training loop â”€â”€
     for epoch in range(start_epoch, EPOCHS):
         t0 = time.time()
-        print(f"\n{'─'*60}")
+        print(f"\n{'â”€'*60}")
         print(f"  Epoch {epoch + 1}/{EPOCHS}")
-        print(f"{'─'*60}")
+        print(f"{'â”€'*60}")
 
         train_loss, train_acc = train_one_epoch(
             model, train_loader, optimizer, criterion, scaler,
@@ -389,29 +392,29 @@ def main(args):
         current_lr = optimizer.param_groups[0]["lr"]
         print(f"  Train Loss: {train_loss:.4f}  |  Acc: {train_acc:.4f}")
         print(f"  Val   Loss: {val_loss:.4f}  |  Acc: {val_acc:.4f}")
-        print(f"  FAKE → F1: {val_metrics['f1']:.4f}  Prec: {val_metrics['precision']:.4f}  Rec: {val_metrics['recall']:.4f}")
-        print(f"  REAL → F1: {val_metrics['f1_real']:.4f}  Prec: {val_metrics['precision_real']:.4f}  Rec: {val_metrics['recall_real']:.4f}")
+        print(f"  FAKE â†’ F1: {val_metrics['f1']:.4f}  Prec: {val_metrics['precision']:.4f}  Rec: {val_metrics['recall']:.4f}")
+        print(f"  REAL â†’ F1: {val_metrics['f1_real']:.4f}  Prec: {val_metrics['precision_real']:.4f}  Rec: {val_metrics['recall_real']:.4f}")
         print(f"  LR: {current_lr:.2e}  |  Time: {elapsed:.1f}s")
 
-        # ── Save epoch checkpoint ──
+        # â”€â”€ Save epoch checkpoint â”€â”€
         ckpt_path = os.path.join(CHECKPOINT_DIR, f"epoch_{epoch + 1:03d}.pt")
         save_checkpoint(model, optimizer, scheduler, scaler, epoch, best_val_loss, ckpt_path)
 
-        # ── Track best model (saved to model/ not checkpoints/) ──
+        # â”€â”€ Track best model (saved to model/ not checkpoints/) â”€â”€
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_path = os.path.join(MODEL_DIR, "best_model.pt")
             save_checkpoint(model, optimizer, scheduler, scaler, epoch, best_val_loss, best_path)
-            print(f"  ⭐ New best val loss: {best_val_loss:.4f}")
-            print(f"     Saved → {best_path}")
+            print(f"  â­ New best val loss: {best_val_loss:.4f}")
+            print(f"     Saved â†’ {best_path}")
 
     print(f"\n{'='*60}")
     print(f"  Training complete. Best val loss: {best_val_loss:.4f}")
-    print(f"  Checkpoints → {CHECKPOINT_DIR}")
+    print(f"  Checkpoints â†’ {CHECKPOINT_DIR}")
     print(f"{'='*60}")
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Trinetra Training Loop")
@@ -433,3 +436,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(args)
+

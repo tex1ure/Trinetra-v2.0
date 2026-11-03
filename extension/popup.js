@@ -1,106 +1,61 @@
-/**
- * popup.js — Trinetra Extension Popup Logic
- * 
- * Handles:
- *  - Toggle state persistence (chrome.storage.local)
- *  - At-least-one-on enforcement
- *  - Scan trigger → background → content script
- *  - Server health check
- */
+﻿document.addEventListener('DOMContentLoaded', () => {
+  const switchLocal = document.getElementById('switch-local');
+  const switchCloud = document.getElementById('switch-cloud');
+  const warningEl = document.getElementById('tri-warning');
+  const btnScan = document.getElementById('btn-scan');
+  const statusContainer = document.getElementById('tri-status');
+  const statusDot = statusContainer.querySelector('.tri-status-dot');
+  const statusText = statusContainer.querySelector('.tri-status-text');
 
-const switchLocal = document.getElementById('switch-local');
-const switchCloud = document.getElementById('switch-cloud');
-const btnScan    = document.getElementById('btn-scan');
-const warning    = document.getElementById('tri-warning');
-const statusDot  = document.querySelector('.tri-status-dot');
-const statusText = document.querySelector('.tri-status-text');
-
-// ── Load saved toggle state ──
-chrome.storage.local.get(['useLocal', 'useCloud'], (data) => {
-  // Default both ON if no saved state
-  switchLocal.checked = data.useLocal !== undefined ? data.useLocal : true;
-  switchCloud.checked = data.useCloud !== undefined ? data.useCloud : true;
-});
-
-// ── Toggle handlers with at-least-one enforcement ──
-switchLocal.addEventListener('change', () => {
-  if (!switchLocal.checked && !switchCloud.checked) {
-    switchLocal.checked = true;
-    flashWarning();
-    return;
-  }
-  saveSettings();
-});
-
-switchCloud.addEventListener('change', () => {
-  if (!switchLocal.checked && !switchCloud.checked) {
-    switchCloud.checked = true;
-    flashWarning();
-    return;
-  }
-  saveSettings();
-});
-
-function saveSettings() {
-  warning.classList.remove('visible');
-  chrome.storage.local.set({
-    useLocal: switchLocal.checked,
-    useCloud: switchCloud.checked
-  });
-}
-
-function flashWarning() {
-  warning.classList.remove('visible');
-  // Force reflow for re-triggering animation
-  void warning.offsetWidth;
-  warning.classList.add('visible');
-  setTimeout(() => warning.classList.remove('visible'), 3000);
-}
-
-// ── Scan button ──
-btnScan.addEventListener('click', async () => {
-  // Save settings first
-  saveSettings();
-  
-  // Get the current active tab
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  
-  if (!tab || !tab.id) {
-    return;
-  }
-
-  // Send message to background to start the scan
-  chrome.runtime.sendMessage({
-    action: "start-scan",
-    tabId: tab.id
+  // Privacy-first defaults: Local ON, Cloud OFF
+  chrome.storage.local.get({ useLocal: true, useCloud: false }, (prefs) => {
+    switchLocal.checked = prefs.useLocal;
+    switchCloud.checked = prefs.useCloud;
   });
 
-  // Close the popup
-  window.close();
-});
-
-// ── Server health check ──
-async function checkServerStatus() {
-  try {
-    const response = await fetch('http://localhost:8000/', {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000)
-    });
-    if (response.ok) {
-      statusDot.className = 'tri-status-dot online';
-      statusText.textContent = 'Server Online';
-    } else {
-      setOffline();
+  function enforceAtLeastOne(changedSwitch, otherSwitch) {
+    if (!switchLocal.checked && !switchCloud.checked) {
+      changedSwitch.checked = true;
+      warningEl.classList.add('visible');
+      setTimeout(() => warningEl.classList.remove('visible'), 2500);
+      return;
     }
-  } catch (e) {
-    setOffline();
+    chrome.storage.local.set({
+      useLocal: switchLocal.checked,
+      useCloud: switchCloud.checked,
+    });
   }
-}
 
-function setOffline() {
-  statusDot.className = 'tri-status-dot offline';
-  statusText.textContent = 'Server Offline';
-}
+  switchLocal.addEventListener('change', () => enforceAtLeastOne(switchLocal, switchCloud));
+  switchCloud.addEventListener('change', () => enforceAtLeastOne(switchCloud, switchLocal));
 
-// Run health check on popup open
-checkServerStatus();
+  // Check backend health
+  fetch('http://localhost:8000/health')
+    .then((res) => {
+      if (!res.ok) throw new Error('Offline');
+      return res.json();
+    })
+    .then((data) => {
+      statusDot.classList.remove('offline');
+      statusDot.classList.add('online');
+      statusText.textContent = `Online · ${data.model || 'Local Engine'}`;
+    })
+    .catch(() => {
+      statusDot.classList.remove('online');
+      statusDot.classList.add('offline');
+      statusText.textContent = 'Backend Offline (port 8000)';
+    });
+
+  // Trigger region selection on active tab
+  btnScan.addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0];
+      if (!activeTab || !activeTab.id) return;
+      chrome.tabs.sendMessage(activeTab.id, {
+        action: 'TRINETRA_START_SELECTION',
+        allowCloud: switchCloud.checked,
+      });
+      window.close();
+    });
+  });
+});

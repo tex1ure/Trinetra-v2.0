@@ -1,5 +1,5 @@
-"""
-preprocess.py — Adaptive Preprocessing Pipeline for Project Trinetra.
+﻿"""
+preprocess.py â€” Adaptive Preprocessing Pipeline for Project Trinetra.
 
 Supports the DFDC (Deepfake Detection Challenge) dataset format:
   - Flat directory of .mp4 videos
@@ -35,9 +35,9 @@ from src.core.config import (
     IMAGE_EXTENSIONS,
 )
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  MTCNN face detector  (uses GPU if available)
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import torch as _torch
 _detect_device = "cuda" if _torch.cuda.is_available() else "cpu"
 print(f"[INFO] MTCNN running on: {_detect_device.upper()}")
@@ -49,9 +49,9 @@ detector = MTCNN(
     device=_detect_device,
 )
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Albumentations augmentation pipeline
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 augment = A.Compose([
     A.HorizontalFlip(p=0.5),
     A.Rotate(limit=10, p=0.3, border_mode=cv2.BORDER_REFLECT_101),
@@ -61,9 +61,9 @@ augment = A.Compose([
 ])
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Helpers
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def sample_video_frames(video_path: str, n_frames: int = SEQ_LEN) -> list[np.ndarray]:
     """
@@ -129,15 +129,14 @@ def batch_extract_faces(
 
 
 def augment_and_save(face_rgb: np.ndarray, save_path: str) -> None:
-    """Apply augmentations and save the face crop to disk."""
-    augmented = augment(image=face_rgb)["image"]
-    img = Image.fromarray(augmented)
+    """Save clean face crop to disk. Augmentations are applied on-the-fly in dataset.py for train split only."""
+    img = Image.fromarray(face_rgb)
     img.save(save_path)
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Dataset discovery  (DFDC or generic)
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def discover_files(src_dir: str) -> list[tuple[str, int, str]]:
     """
@@ -152,25 +151,25 @@ def discover_files(src_dir: str) -> list[tuple[str, int, str]]:
     """
     meta_path = os.path.join(src_dir, "metadata.json")
 
-    # ─── Auto-detect nested DFDC layout e.g. dfdc_train_part_00/dfdc_train_part_0/ ───
+    # â”€â”€â”€ Auto-detect nested DFDC layout e.g. dfdc_train_part_00/dfdc_train_part_0/ â”€â”€â”€
     if not os.path.isfile(meta_path):
         subdirs = [d for d in os.listdir(src_dir)
                    if os.path.isdir(os.path.join(src_dir, d))]
         if len(subdirs) == 1:
             candidate = os.path.join(src_dir, subdirs[0], "metadata.json")
             if os.path.isfile(candidate):
-                print(f"[INFO] Detected nested DFDC layout — using: {os.path.join(src_dir, subdirs[0])}")
+                print(f"[INFO] Detected nested DFDC layout â€” using: {os.path.join(src_dir, subdirs[0])}")
                 src_dir = os.path.join(src_dir, subdirs[0])
                 meta_path = candidate
 
-    # ─── Known FaceForensics++ fake-method folder names ───
+    # â”€â”€â”€ Known FaceForensics++ fake-method folder names â”€â”€â”€
     FF_FAKE_FOLDERS = {
         "Deepfakes", "Face2Face", "FaceShifter",
         "FaceSwap", "NeuralTextures", "DeepFakeDetection",
     }
 
     if os.path.isfile(meta_path):
-        # ─── DFDC format ───
+        # â”€â”€â”€ DFDC format â”€â”€â”€
         print(f"[INFO] Detected DFDC format (metadata.json found)")
         with open(meta_path, "r", encoding="utf-8") as f:
             metadata = json.load(f)
@@ -191,7 +190,7 @@ def discover_files(src_dir: str) -> list[tuple[str, int, str]]:
         return files
 
     elif os.path.isdir(os.path.join(src_dir, "original")):
-        # ─── FaceForensics++ format ───
+        # â”€â”€â”€ FaceForensics++ format â”€â”€â”€
         print(f"[INFO] Detected FaceForensics++ layout (original/ folder found)")
         files = []
 
@@ -220,12 +219,12 @@ def discover_files(src_dir: str) -> list[tuple[str, int, str]]:
         return files
 
     else:
-        # ─── Check for generic real/fake subdirs first ───
+        # â”€â”€â”€ Check for generic real/fake subdirs first â”€â”€â”€
         has_real = os.path.isdir(os.path.join(src_dir, "real"))
         has_fake = os.path.isdir(os.path.join(src_dir, "fake"))
 
         if has_real or has_fake:
-            # ─── Generic real/fake subdirectory format ───
+            # â”€â”€â”€ Generic real/fake subdirectory format â”€â”€â”€
             print(f"[INFO] Using generic real/fake subdirectory layout")
             files = []
             for label_name in ("real", "fake"):
@@ -242,8 +241,8 @@ def discover_files(src_dir: str) -> list[tuple[str, int, str]]:
             return files
 
         else:
-            # ─── Flat-fake format (e.g. DFD): all top-level videos → FAKE ───
-            print(f"[INFO] Detected flat-fake layout (DFD-style) — all videos treated as FAKE")
+            # â”€â”€â”€ Flat-fake format (e.g. DFD): all top-level videos â†’ FAKE â”€â”€â”€
+            print(f"[INFO] Detected flat-fake layout (DFD-style) â€” all videos treated as FAKE")
             files = []
             for fname in os.listdir(src_dir):
                 ext = Path(fname).suffix.lower()
@@ -253,9 +252,9 @@ def discover_files(src_dir: str) -> list[tuple[str, int, str]]:
             return files
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Main processing loop
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def process_dataset(src_dir: str, dst_dir: str, append: bool = False) -> None:
     """Walk the source directory, process each file, and write/append to metadata.csv."""
@@ -290,7 +289,7 @@ def process_dataset(src_dir: str, dst_dir: str, append: bool = False) -> None:
             out_subdir = os.path.join(dst_dir, label_name)
             os.makedirs(out_subdir, exist_ok=True)
 
-            # ─── Video path ───
+            # â”€â”€â”€ Video path â”€â”€â”€
             if ext in VIDEO_EXTENSIONS:
                 frames = sample_video_frames(filepath, SEQ_LEN)
                 if not frames:
@@ -318,7 +317,7 @@ def process_dataset(src_dir: str, dst_dir: str, append: bool = False) -> None:
                 if seq_face_count == 0:
                     skipped_count += 1
 
-            # ─── Image path ───
+            # â”€â”€â”€ Image path â”€â”€â”€
             elif ext in IMAGE_EXTENSIONS:
                 img = cv2.imread(filepath)
                 if img is None:
@@ -354,9 +353,9 @@ def process_dataset(src_dir: str, dst_dir: str, append: bool = False) -> None:
     print(f"{'='*50}")
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  CLI entry point
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Trinetra Preprocessing Pipeline")
@@ -371,3 +370,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     process_dataset(args.src, args.dst, append=args.append)
+

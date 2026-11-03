@@ -1,17 +1,17 @@
-"""
-generate_metadata.py — Builds metadata.csv from processed_data/fake/ and real/
+﻿"""
+generate_metadata.py â€” Builds metadata.csv from processed_data/fake/ and real/
 
 Supports both filename formats:
   Old format: {clip_id}_{frame_index}.png  (e.g., 0_137.png)
   New format: {stem}_frame{frame_index}_face{face_index}.png (e.g., 000_003_frame0_face0.png)
 
 CSV columns produced (matching dataset.py expectations):
-  file_path     — relative path like "fake/0_137.png"
-  label         — 1 = fake, 0 = real
-  source_file   — the original mp4 filename (reconstructed)
-  is_sequence   — True / False
-  sequence_id   — int (same for all frames of a clip) or NaN for statics
-  frame_index   — int (parsed from filename)
+  file_path     â€” relative path like "fake/0_137.png"
+  label         â€” 1 = fake, 0 = real
+  source_file   â€” the original mp4 filename (reconstructed)
+  is_sequence   â€” True / False
+  sequence_id   â€” int (same for all frames of a clip) or NaN for statics
+  frame_index   â€” int (parsed from filename)
 """
 
 import os
@@ -20,12 +20,10 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-# ── Config ──────────────────────────────────────────────────────────────────
-PROCESSED_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "processed_data")
-OUTPUT_CSV    = os.path.join(PROCESSED_DIR, "metadata.csv")
-SEQ_LEN       = 10          # must match config.py
+# â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+from src.core.config import PROCESSED_DIR, METADATA_CSV as OUTPUT_CSV, SEQ_LEN
 
-# ── Scan folders ─────────────────────────────────────────────────────────────
+# â”€â”€ Scan folders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 folders = {
     "fake": 1,   # label 1 = deepfake
     "real": 0,   # label 0 = real
@@ -36,7 +34,7 @@ clip_data: dict[int, dict[str, list]] = {0: defaultdict(list), 1: defaultdict(li
 
 regex_new = re.compile(r"^(.*)_frame(\d+)_face\d+$")
 
-# ── Build rows ───────────────────────────────────────────────────────────────
+# â”€â”€ Build rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 rows = []
 global_seq_id = 0
 stats = {"seq_clips": 0, "seq_frames": 0, "static_images": 0}
@@ -44,7 +42,7 @@ stats = {"seq_clips": 0, "seq_frames": 0, "static_images": 0}
 for folder_name, label_val in folders.items():
     folder_path = os.path.join(PROCESSED_DIR, folder_name)
     if not os.path.isdir(folder_path):
-        print(f"  ⚠  Folder not found: {folder_path}, skipping.")
+        print(f"  âš   Folder not found: {folder_path}, skipping.")
         continue
 
     for fname in os.listdir(folder_path):
@@ -82,7 +80,7 @@ for folder_name, label_val in folders.items():
                 })
                 stats["static_images"] += 1
 
-# ── Build rows (continued: grouped sequences) ───────────────────────────────
+# â”€â”€ Build rows (continued: grouped sequences) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 for label_val, clips in clip_data.items():
     for clip_id, frame_list in clips.items():
@@ -101,7 +99,7 @@ for label_val, clips in clip_data.items():
         sorted_frame_indices = sorted(list(distinct_frames.keys()))
 
         if len(sorted_frame_indices) >= SEQ_LEN:
-            # Treat as a sequence — use first SEQ_LEN frames
+            # Treat as a sequence â€” use first SEQ_LEN frames
             seq_frame_indices = sorted_frame_indices[:SEQ_LEN]
             for frame_index in seq_frame_indices:
                 rel_path = distinct_frames[frame_index]
@@ -131,7 +129,7 @@ for label_val, clips in clip_data.items():
                 stats["static_images"] += 1
 
         else:
-            # Too few frames → treat each as a standalone static image
+            # Too few frames â†’ treat each as a standalone static image
             for frame_index in sorted_frame_indices:
                 rel_path = distinct_frames[frame_index]
                 rows.append({
@@ -144,7 +142,7 @@ for label_val, clips in clip_data.items():
                 })
                 stats["static_images"] += len(sorted_frame_indices)
 
-# ── Write CSV ────────────────────────────────────────────────────────────────
+# â”€â”€ Write CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 fieldnames = ["file_path", "label", "source_file", "is_sequence", "sequence_id", "frame_index"]
 
 with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
@@ -152,13 +150,14 @@ with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
     writer.writeheader()
     writer.writerows(rows)
 
-# ── Summary ──────────────────────────────────────────────────────────────────
+# â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 print(f"\n{'='*55}")
-print(f"  metadata.csv regenerated → {OUTPUT_CSV}")
+print(f"  metadata.csv regenerated â†’ {OUTPUT_CSV}")
 print(f"{'='*55}")
 print(f"  Total rows        : {len(rows):,}")
 print(f"  Sequence clips    : {stats['seq_clips']:,}   ({stats['seq_frames']:,} frames)")
 print(f"  Static images     : {stats['static_images']:,}")
 print(f"  Unique seq IDs    : {global_seq_id:,}")
 print(f"{'='*55}\n")
-print("  ✅ Ready to run:  python train.py --resume")
+print("  âœ… Ready to run:  python train.py --resume")
+

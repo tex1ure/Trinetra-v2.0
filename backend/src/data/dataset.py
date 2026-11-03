@@ -1,10 +1,10 @@
-"""
-dataset.py — PyTorch Dataset and DataLoader for Project Trinetra.
+﻿"""
+dataset.py â€” PyTorch Dataset and DataLoader for Project Trinetra.
 
 Reads from the metadata.csv ledger produced by preprocess.py.
 Handles two sample types:
-  • Sequences (video):  (SEQ_LEN, C, H, W) tensors
-  • Static images:      (1, C, H, W)  tensors
+  â€¢ Sequences (video):  (SEQ_LEN, C, H, W) tensors
+  â€¢ Static images:      (1, C, H, W)  tensors
 
 A custom collate_fn splits each batch into sequence and static sub-batches,
 keeping shapes consistent and avoiding padding waste.
@@ -33,21 +33,21 @@ from src.core.config import (
     SEQ_LEN,
 )
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  ImageNet normalisation (applied after albumentations)
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _IMAGENET_MEAN = [0.485, 0.456, 0.406]
 _IMAGENET_STD  = [0.229, 0.224, 0.225]
 
 _to_tensor_and_normalize = transforms.Compose([
-    transforms.ToTensor(),                                      # HWC uint8 → CHW float [0,1]
+    transforms.ToTensor(),                                      # HWC uint8 â†’ CHW float [0,1]
     transforms.Normalize(mean=_IMAGENET_MEAN, std=_IMAGENET_STD),
 ])
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Albumentations pipelines
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _build_train_augmentation(img_size: int = IMG_SIZE) -> A.Compose:
     """
@@ -63,10 +63,10 @@ def _build_train_augmentation(img_size: int = IMG_SIZE) -> A.Compose:
     heavy JPEG compression to make the AI tough enough for social media.
     """
     return A.Compose([
-        # ── 0. Resize to model input ──
+        # â”€â”€ 0. Resize to model input â”€â”€
         A.Resize(img_size, img_size, interpolation=cv2.INTER_LINEAR),
 
-        # ── 1. Severe Compression Protocol ──
+        # â”€â”€ 1. Severe Compression Protocol â”€â”€
         #   Simulates brutal platform re-encoding.
         #   Quality floor at 30 strips high-frequency pixel anomalies.
         A.ImageCompression(
@@ -74,14 +74,14 @@ def _build_train_augmentation(img_size: int = IMG_SIZE) -> A.Compose:
             p=0.5,
         ),
 
-        # ── 2. Resolution Degradation ──
-        #   Downscale → re-upscale mimics bandwidth-saving algorithms.
+        # â”€â”€ 2. Resolution Degradation â”€â”€
+        #   Downscale â†’ re-upscale mimics bandwidth-saving algorithms.
         A.Downscale(
             scale_range=(0.5, 0.85),
             p=0.5,
         ),
 
-        # ── 3. High-Frequency Destruction ──
+        # â”€â”€ 3. High-Frequency Destruction â”€â”€
         #   Forces the backbone to rely on structural geometry, not
         #   superficial edge sharpness.
         A.OneOf([
@@ -89,7 +89,7 @@ def _build_train_augmentation(img_size: int = IMG_SIZE) -> A.Compose:
             A.MotionBlur(blur_limit=(3, 7), p=1.0),
         ], p=0.5),
 
-        # ── 4. Artificial Noise Injection ──
+        # â”€â”€ 4. Artificial Noise Injection â”€â”€
         #   Masks synthetic generation signatures; forces deeper
         #   feature-space reasoning.
         A.OneOf([
@@ -98,7 +98,7 @@ def _build_train_augmentation(img_size: int = IMG_SIZE) -> A.Compose:
                        intensity=(0.1, 0.5), p=1.0),
         ], p=0.5),
 
-        # ── 5. Standard geometric / colour jitter ──
+        # â”€â”€ 5. Standard geometric / colour jitter â”€â”€
         A.HorizontalFlip(p=0.5),
         A.ShiftScaleRotate(
             shift_limit=0.05,
@@ -117,15 +117,15 @@ def _build_train_augmentation(img_size: int = IMG_SIZE) -> A.Compose:
 
 
 def _build_val_transform(img_size: int = IMG_SIZE) -> A.Compose:
-    """Clean resize-only transform for validation — no data corruption."""
+    """Clean resize-only transform for validation â€” no data corruption."""
     return A.Compose([
         A.Resize(img_size, img_size, interpolation=cv2.INTER_LINEAR),
     ])
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Dataset
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class DeepfakeDataset(Dataset):
     """
@@ -151,7 +151,7 @@ class DeepfakeDataset(Dataset):
 
         self.samples: list[dict] = []
 
-        # ── Group video sequences by sequence_id ──
+        # â”€â”€ Group video sequences by sequence_id â”€â”€
         seq_df = df[df["is_sequence"] == True]  # noqa: E712
         if not seq_df.empty:
             for seq_id, group in seq_df.groupby("sequence_id"):
@@ -159,27 +159,23 @@ class DeepfakeDataset(Dataset):
                 paths = group["file_path"].tolist()
                 label = int(group["label"].iloc[0])
                 self.samples.append({
-                    "paths": paths,
-                    "label": label,
-                    "is_sequence": True,
+                    "paths": paths, "label": label, "is_sequence": True, "source_file": str(group["source_file"].iloc[0]),
                 })
 
-        # ── Static images are individual samples ──
+        # â”€â”€ Static images are individual samples â”€â”€
         static_df = df[df["is_sequence"] == False]  # noqa: E712
         for _, row in static_df.iterrows():
             self.samples.append({
-                "paths": [row["file_path"]],
-                "label": int(row["label"]),
-                "is_sequence": False,
+                "paths": [row["file_path"]], "label": int(row["label"]), "is_sequence": False, "source_file": str(row.get("source_file", row["file_path"])),
             })
 
     def __len__(self) -> int:
         return len(self.samples)
 
     def _load_and_augment(self, path: str) -> torch.Tensor:
-        """Load image → albumentations augment → ImageNet normalise → CHW tensor."""
+        """Load image â†’ albumentations augment â†’ ImageNet normalise â†’ CHW tensor."""
         img = Image.open(path).convert("RGB")
-        img_np = np.array(img)  # (H, W, 3) uint8 — albumentations native format
+        img_np = np.array(img)  # (H, W, 3) uint8 â€” albumentations native format
 
         if self.augmentation is not None:
             img_np = self.augmentation(image=img_np)["image"]
@@ -188,7 +184,7 @@ class DeepfakeDataset(Dataset):
             img_np = cv2.resize(img_np, (IMG_SIZE, IMG_SIZE),
                                 interpolation=cv2.INTER_LINEAR)
 
-        # img_np is (H, W, 3) uint8 → torchvision handles conversion
+        # img_np is (H, W, 3) uint8 â†’ torchvision handles conversion
         return _to_tensor_and_normalize(img_np)
 
     def __getitem__(self, idx: int) -> dict:
@@ -219,9 +215,9 @@ class DeepfakeDataset(Dataset):
         }
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Custom collate function
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def collate_fn(batch: list[dict]) -> dict:
     """
@@ -254,9 +250,9 @@ def collate_fn(batch: list[dict]) -> dict:
     return result
 
 
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #  Convenience builder
-# ──────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def build_dataloaders(
     train_indices: list[int],
@@ -266,7 +262,7 @@ def build_dataloaders(
 ) -> tuple[DataLoader, DataLoader]:
     """Return train and val DataLoaders from pre-computed index splits."""
 
-    # ── Separate datasets with different augmentation policies ──
+    # â”€â”€ Separate datasets with different augmentation policies â”€â”€
     train_dataset = DeepfakeDataset(
         metadata_csv, processed_dir,
         augmentation=_build_train_augmentation(),
@@ -279,7 +275,7 @@ def build_dataloaders(
     train_subset = torch.utils.data.Subset(train_dataset, train_indices)
     val_subset = torch.utils.data.Subset(val_dataset, val_indices)
 
-    # ── Handle Class Imbalance via Oversampling ──
+    # â”€â”€ Handle Class Imbalance via Oversampling â”€â”€
     # Problem: Deepfake datasets usually have way more 'Fake' than 'Real'.
     # If we just trained on that, the AI would become 'paranoid' and call 
     # everything fake just to be safe.
@@ -314,3 +310,4 @@ def build_dataloaders(
         pin_memory=True,
     )
     return train_loader, val_loader
+

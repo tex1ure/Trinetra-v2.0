@@ -113,11 +113,11 @@ export const UploadZone = ({
       ) : (
         <div className="space-y-4">
           <div className="relative rounded-2xl overflow-hidden border border-border bg-muted aspect-video">
-            <img
-              src={preview}
-              alt="Uploaded preview"
-              className="w-full h-full object-contain"
-            />
+            {fileName && /\.(mp4|mov|avi|mkv)$/i.test(fileName) ? (
+              <video src={preview} controls muted className="w-full h-full object-contain" />
+            ) : (
+              <img src={preview} alt="Uploaded preview" className="w-full h-full object-contain" />
+            )}
             {isAnalyzing && (
               <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-orange to-transparent animate-scan" />
@@ -179,3 +179,4 @@ export const UploadZone = ({
     </div>
   );
 };
+

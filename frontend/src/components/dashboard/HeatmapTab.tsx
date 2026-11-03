@@ -1,31 +1,27 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import type { AnalysisResponse } from '@/lib/api';
+import { Eye, Activity, Layers, Sparkles } from 'lucide-react';
 
 interface HeatmapTabProps {
   preview: string;
   result: AnalysisResponse;
 }
 
-// Generate simulated hotspots from the real result data
-function generateHotspots(result: AnalysisResponse) {
-  const isFake = result.primary_verdict === 'FAKE';
-  if (!isFake) {
-    return [
-      { x: 50, y: 50, size: 20, color: 'purple', label: 'Low artifact', score: Math.round(result.local_confidence * 0.3) },
-    ];
-  }
-  return [
-    { x: 35, y: 30, size: 28, color: 'orange', label: 'Face region', score: Math.round(result.local_confidence) },
-    { x: 65, y: 40, size: 20, color: 'yellow', label: 'Eye area', score: Math.round(result.confidence_score * 0.9) },
-    { x: 50, y: 65, size: 15, color: 'purple', label: 'Texture artifact', score: Math.round(result.local_confidence * 0.6) },
-  ];
-}
+type ViewMode = 'gradcam' | 'ela' | 'face';
 
 export const HeatmapTab = ({ preview, result }: HeatmapTabProps) => {
-  const [intensity, setIntensity] = useState(70);
-  const hotspots = generateHotspots(result);
+  const [viewMode, setViewMode] = useState<ViewMode>('gradcam');
+
+  const activeImage =
+    viewMode === 'gradcam' && result.gradcam_base64
+      ? `data:image/png;base64,${result.gradcam_base64}`
+      : viewMode === 'ela' && result.noise_residual_base64
+      ? `data:image/png;base64,${result.noise_residual_base64}`
+      : viewMode === 'face' && result.face_crop_base64
+      ? `data:image/png;base64,${result.face_crop_base64}`
+      : preview;
 
   return (
     <div className="space-y-6">
@@ -33,143 +29,95 @@ export const HeatmapTab = ({ preview, result }: HeatmapTabProps) => {
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
             <h2 className="font-display text-lg font-semibold">
-              Grad‑CAM heatmap
+              Explainable AI (XAI) Visual Evidence
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Brighter regions indicate stronger manipulation evidence.
+              Inspect the real Grad‑CAM activation heatmap, Error Level Analysis (ELA) noise residuals, and extracted face region.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-mono">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse" />
-            XAI · v1.0
-          </span>
-        </div>
 
-        <div className="relative rounded-2xl overflow-hidden border border-border bg-black aspect-video">
-          {/* Base image */}
-          {result.gradcam_base64 ? (
-            <img
-              src={`data:image/png;base64,${result.gradcam_base64}`}
-              alt="Grad-CAM heatmap"
-              className="absolute inset-0 w-full h-full object-contain"
-            />
-          ) : (
-            <>
-              <img
-                src={preview}
-                alt="Source"
-                className="absolute inset-0 w-full h-full object-contain"
-              />
-              {/* Simulated heatmap overlay */}
-              <div
-                className="absolute inset-0 pointer-events-none mix-blend-screen"
-                style={{ opacity: intensity / 100 }}
-              >
-                {hotspots.map((h, i) => (
-                  <div
-                    key={i}
-                    className="absolute rounded-full blur-2xl"
-                    style={{
-                      left: `${h.x}%`,
-                      top: `${h.y}%`,
-                      width: `${h.size}%`,
-                      height: `${h.size}%`,
-                      transform: 'translate(-50%, -50%)',
-                      background: `radial-gradient(circle, hsl(var(--brand-${h.color})) 0%, transparent 70%)`,
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Crosshairs on hotspots */}
-              {hotspots.map((h, i) => (
-                <div
-                  key={`mark-${i}`}
-                  className="absolute pointer-events-none"
-                  style={{
-                    left: `${h.x}%`,
-                    top: `${h.y}%`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                >
-                  <div className="h-6 w-6 rounded-full border-2 border-white/80 shadow-lg" />
-                  <span className="absolute top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-mono bg-black/70 text-white px-1.5 py-0.5 rounded">
-                    {h.label} · {h.score}%
-                  </span>
-                </div>
-              ))}
-            </>
-          )}
-
-          {/* Scan line */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent animate-scan" />
-        </div>
-
-        {/* Intensity slider */}
-        {!result.gradcam_base64 && (
-          <div className="mt-6">
-            <div className="flex justify-between text-xs text-muted-foreground mb-2">
-              <span>Overlay intensity</span>
-              <span className="font-mono">{intensity}%</span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={intensity}
-              onChange={(e) => setIntensity(Number(e.target.value))}
-              className="w-full h-2 rounded-full accent-brand-orange cursor-pointer"
-            />
+          <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-xl border border-border">
+            <button
+              onClick={() => setViewMode('gradcam')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                viewMode === 'gradcam' ? 'bg-background shadow-soft text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-brand-orange" /> Grad‑CAM
+            </button>
+            <button
+              onClick={() => setViewMode('ela')}
+              disabled={!result.noise_residual_base64}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40 ${
+                viewMode === 'ela' ? 'bg-background shadow-soft text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Layers className="h-3.5 w-3.5 text-brand-purple" /> ELA Noise Map
+            </button>
+            <button
+              onClick={() => setViewMode('face')}
+              disabled={!result.face_crop_base64}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40 ${
+                viewMode === 'face' ? 'bg-background shadow-soft text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Eye className="h-3.5 w-3.5 text-emerald-500" /> Face Crop
+            </button>
           </div>
-        )}
+        </div>
 
-        {/* Color legend */}
-        <div className="mt-6 flex items-center gap-6 flex-wrap text-xs">
-          <span className="text-muted-foreground uppercase tracking-widest text-[10px] font-semibold">
-            Legend
+        <div className="relative rounded-2xl overflow-hidden border border-border bg-black aspect-video flex items-center justify-center">
+          <img
+            src={activeImage}
+            alt="Forensic visual output"
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
+
+        <div className="mt-4 flex items-center justify-between flex-wrap gap-4 text-xs text-muted-foreground">
+          <span>
+            {viewMode === 'gradcam' && 'Grad-CAM highlights spatial regions (red/yellow) that most influenced the neural network verdict.'}
+            {viewMode === 'ela' && 'Error Level Analysis (ELA) amplifies JPEG compression residuals to reveal synthetic blending seams.'}
+            {viewMode === 'face' && 'MTCNN-isolated face region used as input tensor (384×384) for spatial-temporal inference.'}
           </span>
-          {[
-            { c: 'purple', label: 'Low' },
-            { c: 'orange', label: 'Medium' },
-            { c: 'yellow', label: 'High' },
-          ].map((l) => (
-            <div key={l.c} className="flex items-center gap-2">
-              <span
-                className="h-3 w-3 rounded-full"
-                style={{ background: `hsl(var(--brand-${l.c}))` }}
-              />
-              <span>{l.label}</span>
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* Hotspot list */}
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-        <h3 className="font-display font-semibold">Detected regions</h3>
-        <div className="mt-4 grid sm:grid-cols-2 gap-3">
-          {hotspots.map((h, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 px-4 py-3"
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: `hsl(var(--brand-${h.color}))` }}
-                />
-                <div>
-                  <p className="text-sm font-medium">{h.label}</p>
-                  <p className="text-[11px] text-muted-foreground font-mono">
-                    x:{h.x}% y:{h.y}%
+      {/* Temporal & Geometric Jitter Forensics (when available from video or multi-frame analysis) */}
+      {(result.temporal_rollout || result.geometric_jitter) && (
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="h-5 w-5 text-brand-orange" />
+            <h3 className="font-display font-semibold">Temporal &amp; Geometric Forensics</h3>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {result.temporal_rollout && (
+              <>
+                <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Shatter Frame Index</p>
+                  <p className="mt-1 font-display text-2xl font-bold text-brand-orange">
+                    Frame #{result.temporal_rollout.shatter_index}
                   </p>
                 </div>
+                <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Max Frame Delta</p>
+                  <p className="mt-1 font-display text-2xl font-bold text-brand-purple">
+                    {result.temporal_rollout.shatter_delta}%
+                  </p>
+                </div>
+              </>
+            )}
+            {result.geometric_jitter && (
+              <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Landmark Jitter Score</p>
+                <p className="mt-1 font-display text-2xl font-bold text-foreground">
+                  {result.geometric_jitter.jitter_score}
+                </p>
               </div>
-              <span className="font-display font-bold text-sm">{h.score}%</span>
-            </div>
-          ))}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

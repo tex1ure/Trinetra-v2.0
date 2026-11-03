@@ -1,5 +1,17 @@
 ﻿const API_BASE = '/api/backend';
 
+export interface TemporalRollout {
+  per_frame_confidence: number[];
+  shatter_index: number;
+  shatter_delta: number;
+}
+
+export interface GeometricJitter {
+  per_landmark_variance: Record<string, number>;
+  jitter_score: number;
+  frame_count: number;
+}
+
 export interface AnalysisResponse {
   primary_verdict: 'FAKE' | 'REAL';
   confidence_score: number;
@@ -9,8 +21,13 @@ export interface AnalysisResponse {
   rd_score: number | null;
   forensic_summary: string;
   latency_ms: number;
-  face_crop_base64?: string;
-  gradcam_base64?: string;
+  face_crop_base64?: string | null;
+  gradcam_base64?: string | null;
+  noise_residual_base64?: string | null;
+  per_frame_scores?: number[] | null;
+  temporal_rollout?: TemporalRollout | null;
+  geometric_jitter?: GeometricJitter | null;
+  forensic_log?: Record<string, any> | null;
   exif_data?: Record<string, string | number> | null;
 }
 

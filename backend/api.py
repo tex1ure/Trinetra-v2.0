@@ -117,6 +117,11 @@ class AnalysisResponse(BaseModel):
     latency_ms: float
     face_crop_base64: Optional[str] = None
     gradcam_base64: Optional[str] = None
+    noise_residual_base64: Optional[str] = None
+    per_frame_scores: Optional[list[float]] = None
+    temporal_rollout: Optional[dict] = None
+    geometric_jitter: Optional[dict] = None
+    forensic_log: Optional[dict] = None
     exif_data: Optional[dict] = None
 
 @app.post("/analyze", response_model=AnalysisResponse)
@@ -207,8 +212,9 @@ async def analyze_image(request: AnalysisRequest):
             img.save(buffered, format="PNG")
             return base64.b64encode(buffered.getvalue()).decode()
 
-        face_b64 = img_to_base64(result.face_crop) if result.face_crop is not None else None
-        grad_b64 = img_to_base64(result.gradcam_overlay) if result.gradcam_overlay is not None else None
+        face_b64 = img_to_base64(result.face_crop) if getattr(result, "face_crop", None) is not None else None
+        grad_b64 = img_to_base64(result.gradcam_overlay) if getattr(result, "gradcam_overlay", None) is not None else None
+        noise_b64 = img_to_base64(result.noise_residual) if getattr(result, "noise_residual", None) is not None else None
 
         return AnalysisResponse(
             primary_verdict=str(primary_verdict),
@@ -221,6 +227,11 @@ async def analyze_image(request: AnalysisRequest):
             latency_ms=safe_round((end_time - start_time) * 1000, 2),
             face_crop_base64=face_b64,
             gradcam_base64=grad_b64,
+            noise_residual_base64=noise_b64,
+            per_frame_scores=getattr(result, "per_frame_scores", None),
+            temporal_rollout=getattr(result, "temporal_rollout", None),
+            geometric_jitter=getattr(result, "geometric_jitter", None),
+            forensic_log=getattr(result, "forensic_log", None),
             exif_data=exif_extracted,
         )
     except HTTPException:
@@ -305,3 +316,4 @@ async def advance_scan(request: AdvanceScanRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
