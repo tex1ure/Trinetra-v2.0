@@ -72,37 +72,17 @@ function LoginScreen({
         <h1 className="font-display text-3xl font-bold tracking-tighter mb-2">{t.welcome}</h1>
         <p className="text-muted-foreground text-sm mb-8">{t.welcomeSub}</p>
 
-        <div className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email address"
-            className="w-full px-4 py-3 rounded-2xl bg-muted/40 border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/40 text-sm"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-3 rounded-2xl bg-muted/40 border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/40 text-sm"
-          />
-          <button
-            onClick={onLogin}
-            className="w-full py-3 rounded-2xl bg-foreground text-background font-semibold text-sm hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2"
-          >
-            <Lock className="h-4 w-4" /> {t.signIn}
-          </button>
-        </div>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
+        <div className="rounded-2xl border border-brand-orange/30 bg-brand-orange/5 p-4 mb-6 text-xs text-muted-foreground leading-relaxed">
+          <div className="font-semibold text-foreground mb-1 flex items-center gap-1.5">
+            <Lock className="h-3.5 w-3.5 text-brand-orange" />
+            Local-First Private Session
           </div>
-          <div className="relative flex justify-center">
-            <span className="bg-card px-3 text-xs text-muted-foreground">OR</span>
-          </div>
+          Analysis runs locally on-device by default. Media is not stored or shared without explicit opt-in.
         </div>
 
         <button
           onClick={onLogin}
-          className="w-full py-3 rounded-2xl border-2 border-border text-foreground font-semibold text-sm hover:border-brand-orange/60 hover:text-brand-orange transition-colors"
+          className="w-full py-3.5 rounded-2xl bg-foreground text-background font-semibold text-sm hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
         >
           {t.guest}
         </button>

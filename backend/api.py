@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 """
 api.py — Privacy-First FastAPI Backend for Trinetra.
 Strips GPS/PII EXIF metadata on ingestion and enforces Local-Only inference by default.
@@ -12,13 +12,15 @@ import time
 import io
 import asyncio
 import numpy as np
+import hmac
 from typing import Optional, Any
 
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 if _script_dir not in sys.path:
     sys.path.append(_script_dir)
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from PIL import Image, ExifTags
@@ -99,8 +101,33 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_origin_regex=r"^chrome-extension://.*$",
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
+
+API_SECRET_KEY = os.getenv("TRINETRA_API_KEY", "trinetra_local_dev_token_2026")
+security_bearer = HTTPBearer(auto_error=False)
+
+def verify_api_token(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_bearer),
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
+) -> str:
+    """
+    Validates API authorization from 'Authorization: Bearer <token>' or 'X-API-Key: <token>'.
+    Enforces constant-time token comparison.
+    """
+    token = None
+    if credentials and credentials.scheme.lower() == "bearer":
+        token = credentials.credentials.strip()
+    elif x_api_key:
+        token = x_api_key.strip()
+
+    if not token or not hmac.compare_digest(token, API_SECRET_KEY):
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: Missing or invalid Trinetra API authorization token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return token
 
 class AnalysisRequest(BaseModel):
     base64_data: str = Field(..., max_length=MAX_BASE64_CHARS)
@@ -124,7 +151,7 @@ class AnalysisResponse(BaseModel):
     forensic_log: Optional[dict] = None
     exif_data: Optional[dict] = None
 
-@app.post("/analyze", response_model=AnalysisResponse)
+@app.post("/analyze", response_model=AnalysisResponse, dependencies=[Depends(verify_api_token)])
 async def analyze_image(request: AnalysisRequest):
     temp_path: Optional[str] = None
     try:
@@ -256,7 +283,7 @@ class AdvanceScanRequest(BaseModel):
 class AdvanceScanResponse(BaseModel):
     analysis: str
 
-@app.post("/advance-scan", response_model=AdvanceScanResponse)
+@app.post("/advance-scan", response_model=AdvanceScanResponse, dependencies=[Depends(verify_api_token)])
 async def advance_scan(request: AdvanceScanRequest):
     if not request.consent_confirmed:
         raise HTTPException(

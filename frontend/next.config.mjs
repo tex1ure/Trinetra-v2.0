@@ -1,4 +1,4 @@
-﻿/** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
     return [
@@ -7,6 +7,19 @@ const nextConfig = {
         destination: 'http://127.0.0.1:8000/:path*',
       },
     ];
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '8000',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
   },
   async headers() {
     return [

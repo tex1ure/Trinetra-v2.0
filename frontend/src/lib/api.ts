@@ -1,4 +1,6 @@
-﻿const API_BASE = '/api/backend';
+const API_BASE = '/api/backend';
+const DEFAULT_API_KEY = 'trinetra_local_dev_token_2026';
+const API_KEY = process.env.NEXT_PUBLIC_TRINETRA_API_KEY || DEFAULT_API_KEY;
 
 export interface TemporalRollout {
   per_frame_confidence: number[];
@@ -62,7 +64,10 @@ export async function analyzeMedia(file: File, allowCloud: boolean = false): Pro
   try {
     const res = await fetch('http://127.0.0.1:8000/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+      },
       body: JSON.stringify({ base64_data: base64Data, allow_cloud: allowCloud }),
       signal: controller.signal,
     });
@@ -95,7 +100,10 @@ export async function advanceScan(file: File, consentConfirmed: boolean = false)
   try {
     const res = await fetch('http://127.0.0.1:8000/advance-scan', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+      },
       body: JSON.stringify({ base64_data: base64Data, consent_confirmed: consentConfirmed }),
       signal: controller.signal,
     });

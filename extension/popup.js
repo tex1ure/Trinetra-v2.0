@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const switchLocal = document.getElementById('switch-local');
   const switchCloud = document.getElementById('switch-cloud');
   const warningEl = document.getElementById('tri-warning');
@@ -46,16 +46,22 @@
       statusText.textContent = 'Backend Offline (port 8000)';
     });
 
-  // Trigger region selection on active tab
-  btnScan.addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const activeTab = tabs[0];
-      if (!activeTab || !activeTab.id) return;
-      chrome.tabs.sendMessage(activeTab.id, {
-        action: 'TRINETRA_START_SELECTION',
-        allowCloud: switchCloud.checked,
-      });
-      window.close();
+  // Trigger region selection on active tab on demand
+  btnScan.addEventListener('click', async () => {
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!activeTab || !activeTab.id) return;
+
+    try {
+      await chrome.scripting.insertCSS({ target: { tabId: activeTab.id }, files: ['content.css'] });
+      await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: ['content.js'] });
+    } catch (e) {
+      // Injected or non-scriptable
+    }
+
+    chrome.tabs.sendMessage(activeTab.id, {
+      action: 'TRINETRA_START_SELECTION',
+      allowCloud: switchCloud.checked,
     });
+    window.close();
   });
 });

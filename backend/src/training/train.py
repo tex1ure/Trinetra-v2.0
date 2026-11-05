@@ -1,4 +1,4 @@
-﻿"""
+"""
 train.py â€” Training loop for Project Trinetra.
 
 Hardware-aware optimizations for RTX 4060 (8 GB VRAM):
@@ -79,7 +79,7 @@ def load_checkpoint(
     scaler: GradScaler,
 ) -> tuple[int, float]:
     """Returns (start_epoch, best_val_loss)."""
-    ckpt = torch.load(path, map_location=DEVICE, weights_only=False)
+    ckpt = torch.load(path, map_location=DEVICE, weights_only=True)
     model.load_state_dict(ckpt["model_state_dict"])
     optimizer.load_state_dict(ckpt["optimizer_state_dict"])
     scheduler.load_state_dict(ckpt["scheduler_state_dict"])
@@ -356,7 +356,7 @@ def main(args):
     if args.finetune:
         if not os.path.isfile(args.finetune):
             raise FileNotFoundError(f"Checkpoint not found: {args.finetune}")
-        ckpt = torch.load(args.finetune, map_location=DEVICE, weights_only=False)
+        ckpt = torch.load(args.finetune, map_location=DEVICE, weights_only=True)
         state = ckpt.get("model_state_dict", ckpt)
         model.load_state_dict(state)
         # Use a lower LR for fine-tuning

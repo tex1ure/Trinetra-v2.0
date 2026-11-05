@@ -1,4 +1,5 @@
-﻿const API_URL = 'http://localhost:8000/analyze';
+const API_URL = 'http://localhost:8000/analyze';
+const DEFAULT_API_KEY = 'trinetra_local_dev_token_2026';
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -20,9 +21,13 @@ async function fetchImageAsDataUrl(srcUrl) {
 }
 
 async function runBackendAnalysis(base64Data, allowCloud) {
+  const { apiKey = DEFAULT_API_KEY } = await chrome.storage.local.get({ apiKey: DEFAULT_API_KEY });
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
     body: JSON.stringify({
       base64_data: base64Data,
       allow_cloud: Boolean(allowCloud),
@@ -48,10 +53,20 @@ async function runBackendAnalysis(base64Data, allowCloud) {
   return result;
 }
 
+async function ensureContentScript(tabId) {
+  try {
+    await chrome.scripting.insertCSS({ target: { tabId }, files: ['content.css'] });
+    await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
+  } catch (e) {
+    // Already injected or page cannot be scripted
+  }
+}
+
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== 'trinetra-scan-image' || !info.srcUrl || !tab?.id) return;
 
   try {
+    await ensureContentScript(tab.id);
     chrome.tabs.sendMessage(tab.id, { action: 'TRINETRA_SHOW_LOADER' });
     const { useCloud = false } = await chrome.storage.local.get({ useCloud: false });
     const dataUrl = await fetchImageAsDataUrl(info.srcUrl);

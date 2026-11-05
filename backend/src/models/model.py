@@ -259,7 +259,8 @@ def load_detector_from_checkpoint(
     It opens the 'best_model.pt' file, looks at the internal wiring (keys), 
     and automatically builds the correct architecture (Legacy or Current).
     """
-    ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    # Safe checkpoint loading without arbitrary code execution
+    ckpt = torch.load(checkpoint_path, map_location=device, weights_only=True)
     state = ckpt.get("model_state_dict", ckpt)
 
     # ── Detect architecture from checkpoint keys ──

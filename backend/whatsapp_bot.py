@@ -1,4 +1,4 @@
-﻿"""
+"""
 whatsapp_bot.py — Hardened WhatsApp Bot for Trinetra Deepfake Detection.
 Includes Meta X-Hub-Signature-256 verification, bounded worker pool,
 path-traversal prevention, and guaranteed ephemeral media deletion.
@@ -53,9 +53,10 @@ def cleanup_processed_messages():
 threading.Thread(target=cleanup_processed_messages, daemon=True).start()
 
 def verify_webhook_signature(raw_body: bytes, signature_header: str | None) -> bool:
-    """Verify Meta X-Hub-Signature-256 HMAC header when WHATSAPP_APP_SECRET is set."""
+    """Verify Meta X-Hub-Signature-256 HMAC header."""
     if not APP_SECRET:
-        return True
+        logger.error("WHATSAPP_APP_SECRET is not configured. Webhook rejected (fail-closed).")
+        return False
     if not signature_header or not signature_header.startswith("sha256="):
         return False
     expected = hmac.new(APP_SECRET.encode("utf-8"), raw_body, hashlib.sha256).hexdigest()

@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   if (window.__trinetraContentLoaded) return;
   window.__trinetraContentLoaded = true;
 
@@ -32,6 +32,11 @@
     document.body.appendChild(loader);
   }
 
+  function sanitizeBase64(str) {
+    if (!str || typeof str !== 'string') return null;
+    return /^[A-Za-z0-9+/=]+$/.test(str) ? str : null;
+  }
+
   function showErrorModal(errorMsg) {
     removeExistingUI();
     const modal = document.createElement('div');
@@ -48,11 +53,12 @@
           <div class="trinetra-error-panel">
             <div class="trinetra-error-icon">⚠️</div>
             <div class="trinetra-error-title">ANALYSIS FAILED</div>
-            <div class="trinetra-error-msg">${errorMsg}</div>
+            <div class="trinetra-error-msg"></div>
           </div>
         </div>
       </div>
     `;
+    modal.querySelector('.trinetra-error-msg').textContent = String(errorMsg || 'Analysis failed.');
     document.body.appendChild(modal);
     modal.querySelector('#tri-close-btn').addEventListener('click', removeExistingUI);
     modal.addEventListener('click', (e) => {
@@ -66,6 +72,8 @@
     const conf = Number(result.confidence_score || 0).toFixed(1);
     const arcLen = 251.33;
     const dashOffset = (arcLen * (1 - Math.min(100, Math.max(0, Number(conf))) / 100)).toFixed(2);
+    const safeFace = sanitizeBase64(result.face_crop_base64);
+    const safeGrad = sanitizeBase64(result.gradcam_base64);
 
     const modal = document.createElement('div');
     modal.className = 'trinetra-modal';
@@ -78,7 +86,7 @@
               <span class="trinetra-hindi-sub">त्रिनेत्र — सत्य का तीसरा नेत्र</span>
             </div>
             <div class="trinetra-header-right">
-              <span class="trinetra-latency">${Math.round(result.latency_ms || 0)}ms</span>
+              <span class="trinetra-latency"></span>
               <div class="trinetra-close" id="tri-close-btn">✕</div>
             </div>
           </div>
@@ -102,7 +110,7 @@
             <div class="trinetra-yantra-bl"></div>
             <div class="trinetra-yantra-br"></div>
             <div>
-              <div class="trinetra-verdict-label">${result.primary_verdict}</div>
+              <div class="trinetra-verdict-label"></div>
               <div class="trinetra-verdict-sub">CONSOLIDATED FORENSIC VERDICT</div>
             </div>
           </div>
@@ -112,8 +120,8 @@
               <div class="trinetra-visual-card-label">Source Extraction</div>
               <div class="trinetra-face-crop-wrap">
                 ${
-                  result.face_crop_base64
-                    ? `<div class="trinetra-face-crop-circle"><img src="data:image/png;base64,${result.face_crop_base64}" alt="Face" /></div>`
+                  safeFace
+                    ? `<div class="trinetra-face-crop-circle"><img src="data:image/png;base64,${safeFace}" alt="Face" /></div>`
                     : `<div class="trinetra-no-face">No Face<br/>Detected</div>`
                 }
               </div>
@@ -122,8 +130,8 @@
               <div class="trinetra-visual-card-label">Grad-CAM Heatmap</div>
               <div class="trinetra-gradcam-wrap">
                 ${
-                  result.gradcam_base64
-                    ? `<img class="trinetra-gradcam-img" src="data:image/png;base64,${result.gradcam_base64}" alt="Grad-CAM" />`
+                  safeGrad
+                    ? `<img class="trinetra-gradcam-img" src="data:image/png;base64,${safeGrad}" alt="Grad-CAM" />`
                     : `<div class="trinetra-no-gradcam">No heatmap<br/>available</div>`
                 }
               </div>
@@ -133,17 +141,15 @@
           <div class="trinetra-results-grid">
             <div class="trinetra-result-cell">
               <span class="trinetra-label">LOCAL MODEL ⬥ HYBRID</span>
-              <span class="trinetra-value ${result.local_label === 'FAKE' ? 'fake-text' : 'real-text'}">
-                ${result.local_label} (${Number(result.local_confidence || 0).toFixed(1)}%)
-              </span>
+              <span class="trinetra-value trinetra-local-val ${result.local_label === 'FAKE' ? 'fake-text' : 'real-text'}"></span>
             </div>
             <div class="trinetra-result-cell">
               <span class="trinetra-label">RD CLOUD</span>
-              <span class="trinetra-value muted">${result.rd_status || 'LOCAL_ONLY'}</span>
+              <span class="trinetra-value trinetra-rd-val muted"></span>
             </div>
           </div>
 
-          <div class="trinetra-summary">${result.forensic_summary || ''}</div>
+          <div class="trinetra-summary"></div>
 
           <div class="trinetra-footer">
             <div class="trinetra-footer-source">
@@ -155,6 +161,14 @@
         </div>
       </div>
     `;
+
+    // Safely assign dynamic textual content using textContent to prevent XSS
+    modal.querySelector('.trinetra-latency').textContent = `${Math.round(result.latency_ms || 0)}ms`;
+    modal.querySelector('.trinetra-verdict-label').textContent = String(result.primary_verdict || 'UNKNOWN');
+    modal.querySelector('.trinetra-local-val').textContent = `${result.local_label || 'UNKNOWN'} (${Number(result.local_confidence || 0).toFixed(1)}%)`;
+    modal.querySelector('.trinetra-rd-val').textContent = String(result.rd_status || 'LOCAL_ONLY');
+    modal.querySelector('.trinetra-summary').textContent = String(result.forensic_summary || '');
+
     document.body.appendChild(modal);
 
     const onKeyDown = (e) => {
