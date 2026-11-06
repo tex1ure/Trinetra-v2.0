@@ -41,7 +41,7 @@ In an era of hyper-realistic digital manipulation, Trinetra gives journalists, r
 - **WhatsApp Verification Bot**
   - Forward suspicious images directly to a WhatsApp chatbot to receive an instant fact-checking verdict in plain English.
 - **Privacy-First Architecture**
-  - Automatically strips GPS coordinates, camera serial numbers, and personal EXIF metadata before processing. Media is analyzed in memory without permanent storage.
+  - Automatically strips GPS coordinates, camera serial numbers, and personal EXIF metadata before processing. Media is analyzed in memory without permanent storage. See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md) for full architectural details.
 
 ---
 
@@ -231,6 +231,14 @@ Contributions make the open-source community an amazing place to learn and build
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+---
+
+## Privacy and Security
+
+Trinetra is built with a Privacy-by-Design and defense-in-depth architecture:
+- Review our [User Privacy Policy](USER_PRIVACY.md) for details on metadata stripping, local-first inference, and cloud opt-in.
+- Review our [Security Architecture](SECURITY.md) for vulnerability reporting guidelines, authentication mechanisms, and hardening controls.
 
 ---
 
