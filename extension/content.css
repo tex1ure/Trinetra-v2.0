@@ -2,68 +2,76 @@
 
 /**
  * content.css — Trinetra Extension UI v3
- * Theme: Silk UI × Indian Heritage
- * Palette: Deep obsidian, saffron silk, peacock iridescence, temple gold
- * Aesthetic: Glassmorphism + silk texture + sacred geometry + buttery animations
+ * Theme: Clean Modern White Theme
+ * Aesthetic: Pure white surfaces, crisp slate typography, vibrant Indian saffron/teal accents, buttery animations
  */
 
 /* ═══════════════════════════════════════════════
-   §1  DESIGN TOKENS
+   §1  DESIGN TOKENS (WHITE THEME)
    ═══════════════════════════════════════════════ */
 
 :root {
-    /* ── Core Surfaces ── */
-    --bg-void: #050506;
-    --surface-0: rgba(12, 12, 14, 0.92);
-    --surface-1: rgba(18, 18, 22, 0.88);
-    --surface-2: rgba(26, 26, 32, 0.85);
-    --surface-3: rgba(34, 34, 42, 0.8);
-    --surface-glass: rgba(16, 16, 20, 0.65);
+    /* ── Core Surfaces (Light / White) ── */
+    --surface-0: #FFFFFF;
+    --surface-1: #F8FAFC;
+    --surface-2: #F1F5F9;
+    --surface-3: #E2E8F0;
+    --surface-glass: rgba(255, 255, 255, 0.96);
+    --surface-overlay: rgba(15, 23, 42, 0.45);
 
-    /* ── Glass ── */
-    --glass-blur: blur(40px) saturate(180%);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-shine: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%);
-    --glass-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 2px 8px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    /* ── Elevation & Shadows ── */
+    --glass-blur: blur(24px) saturate(160%);
+    --shadow-subtle: 0 1px 3px rgba(15, 23, 42, 0.05);
+    --shadow-card: 
+        0 25px 60px -15px rgba(15, 23, 42, 0.14),
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 8px 20px -4px rgba(15, 23, 42, 0.04);
+    --shadow-loader:
+        0 24px 50px -10px rgba(15, 23, 42, 0.16),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+    --shadow-drawer:
+        -16px 0 50px rgba(15, 23, 42, 0.12),
+        -1px 0 0 rgba(0, 0, 0, 0.06);
 
-    /* ── Indian Silk Palette ── */
+    /* ── Indian Heritage Brand Accents ── */
     --saffron: #FF7B2E;
     --saffron-deep: #E85D0A;
-    --saffron-glow: rgba(255, 123, 46, 0.35);
+    --saffron-glow: rgba(255, 123, 46, 0.22);
     --saffron-soft: rgba(255, 123, 46, 0.08);
-    --gold: #D4A017;
-    --gold-light: #F0C850;
-    --gold-soft: rgba(212, 160, 23, 0.12);
-    --gold-shimmer: rgba(240, 200, 80, 0.25);
-    --peacock-blue: #0E8B8D;
-    --peacock-teal: #18B4B8;
-    --peacock-glow: rgba(24, 180, 184, 0.3);
-    --lotus-pink: #E64A8A;
-    --lotus-glow: rgba(230, 74, 138, 0.25);
-    --indigo: #5B5FC7;
-    --indigo-glow: rgba(91, 95, 199, 0.25);
-    --ivory: #FFF8EE;
+    --saffron-border: rgba(255, 123, 46, 0.25);
+    
+    --gold: #D97706;
+    --gold-light: #F59E0B;
+    --gold-soft: rgba(217, 119, 6, 0.1);
+    --gold-shimmer: rgba(245, 158, 11, 0.2);
 
-    /* ── Brand Accents ── */
-    --accent-brand: var(--saffron);
-    --accent-secondary: var(--gold);
+    --peacock-blue: #0E7490;
+    --peacock-teal: #0D9488;
+    --peacock-glow: rgba(13, 148, 136, 0.2);
+    --peacock-soft: rgba(13, 148, 136, 0.08);
+
+    --purple: #7C3AED;
+    --purple-soft: rgba(124, 58, 237, 0.08);
+    --lotus-pink: #DB2777;
 
     /* ── Verdict Colors ── */
-    --fake-color: #FF4757;
-    --fake-glow: rgba(255, 71, 87, 0.35);
-    --fake-soft: rgba(255, 71, 87, 0.08);
-    --real-color: #2ED573;
-    --real-glow: rgba(46, 213, 115, 0.35);
-    --real-soft: rgba(46, 213, 115, 0.08);
+    --fake-color: #DC2626;
+    --fake-bg: #FEF2F2;
+    --fake-border: #FCA5A5;
+    --fake-glow: rgba(220, 38, 38, 0.2);
+    --fake-soft: rgba(239, 68, 68, 0.08);
 
-    /* ── Text ── */
-    --text-primary: #ECECEE;
-    --text-secondary: rgba(236, 236, 238, 0.6);
-    --text-tertiary: rgba(236, 236, 238, 0.3);
-    --text-hint: rgba(236, 236, 238, 0.15);
+    --real-color: #059669;
+    --real-bg: #ECFDF5;
+    --real-border: #86EFAC;
+    --real-glow: rgba(5, 150, 105, 0.2);
+    --real-soft: rgba(16, 185, 129, 0.08);
+
+    /* ── Typography Colors ── */
+    --text-primary: #0F172A;
+    --text-secondary: #334155;
+    --text-tertiary: #64748B;
+    --text-hint: #94A3B8;
 
     /* ── Typography ── */
     --font-display: 'Outfit', 'Inter', sans-serif;
@@ -71,33 +79,29 @@
     --font-hindi: 'Noto Sans Devanagari', sans-serif;
 
     /* ── Borders ── */
-    --border-subtle: rgba(255, 255, 255, 0.04);
-    --border-normal: rgba(255, 255, 255, 0.07);
-    --border-strong: rgba(255, 255, 255, 0.1);
-    --border-accent: rgba(255, 123, 46, 0.2);
+    --border-subtle: #F1F5F9;
+    --border-normal: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --border-accent: rgba(255, 123, 46, 0.3);
 
     /* ── Radius ── */
     --radius-sm: 10px;
-    --radius-md: 16px;
-    --radius-lg: 24px;
-    --radius-xl: 32px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 26px;
 
     /* ── Easings ── */
     --ease-silk: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --ease-spring: cubic-bezier(0.23, 1, 0.32, 1);
-    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* ── Silk Gradients ── */
-    --silk-saffron: linear-gradient(135deg, #FF7B2E 0%, #E85D0A 40%, #D4A017 100%);
-    --silk-peacock: linear-gradient(135deg, #0E8B8D 0%, #18B4B8 50%, #5B5FC7 100%);
-    --silk-sunset: linear-gradient(135deg, #FF7B2E 0%, #E64A8A 50%, #5B5FC7 100%);
-    --silk-night: linear-gradient(135deg, rgba(14,139,141,0.15) 0%, rgba(255,123,46,0.08) 50%, rgba(91,95,199,0.12) 100%);
+    /* ── Brand Gradients ── */
+    --gradient-brand: linear-gradient(135deg, #FF7B2E 0%, #E85D0A 40%, #7C3AED 100%);
+    --gradient-header: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%);
 }
 
 
 /* ═══════════════════════════════════════════════
-   §2  SELECTION OVERLAY
+   §2  SELECTION OVERLAY & BOX
    ═══════════════════════════════════════════════ */
 
 .trinetra-selection-overlay {
@@ -116,13 +120,13 @@
 .trinetra-selection-box {
     position: fixed;
     border: 2px solid var(--saffron);
-    background: rgba(255, 123, 46, 0.03);
-    outline: 9999px solid rgba(5, 5, 6, 0.55);
+    background: rgba(255, 123, 46, 0.04);
+    outline: 9999px solid var(--surface-overlay);
     box-shadow:
-        0 0 0 1px rgba(255, 123, 46, 0.2),
-        0 0 40px rgba(255, 123, 46, 0.15),
-        inset 0 0 60px rgba(255, 123, 46, 0.05);
-    border-radius: 4px;
+        0 0 0 1px rgba(255, 123, 46, 0.3),
+        0 8px 30px rgba(255, 123, 46, 0.25),
+        inset 0 0 40px rgba(255, 123, 46, 0.06);
+    border-radius: 6px;
     pointer-events: none;
     z-index: 2147483647;
     animation: box-breathe 2s ease-in-out infinite;
@@ -133,42 +137,41 @@
 .trinetra-selection-box::after {
     content: '';
     position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-style: solid;
-    border-color: var(--gold-light);
-    opacity: 0.8;
+    border-color: var(--saffron);
 }
 
 .trinetra-selection-box::before {
-    top: -1px;
-    left: -1px;
-    border-width: 2px 0 0 2px;
-    border-radius: 2px 0 0 0;
+    top: -2px;
+    left: -2px;
+    border-width: 3px 0 0 3px;
+    border-radius: 3px 0 0 0;
 }
 
 .trinetra-selection-box::after {
-    bottom: -1px;
-    right: -1px;
-    border-width: 0 2px 2px 0;
-    border-radius: 0 0 2px 0;
+    bottom: -2px;
+    right: -2px;
+    border-width: 0 3px 3px 0;
+    border-radius: 0 0 3px 0;
 }
 
 @keyframes box-breathe {
-    0%, 100% { box-shadow: 0 0 0 1px rgba(255,123,46,0.2), 0 0 40px rgba(255,123,46,0.15), inset 0 0 60px rgba(255,123,46,0.05); }
-    50% { box-shadow: 0 0 0 1px rgba(255,123,46,0.35), 0 0 60px rgba(255,123,46,0.2), inset 0 0 80px rgba(255,123,46,0.08); }
+    0%, 100% { box-shadow: 0 0 0 1px rgba(255,123,46,0.3), 0 8px 30px rgba(255,123,46,0.2), inset 0 0 40px rgba(255,123,46,0.06); }
+    50% { box-shadow: 0 0 0 1px rgba(255,123,46,0.45), 0 12px 40px rgba(255,123,46,0.3), inset 0 0 50px rgba(255,123,46,0.1); }
 }
 
-/* Scanning line */
+/* Laser scan line */
 .trinetra-selection-box .trinetra-scan-line {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, transparent 0%, var(--saffron) 20%, var(--gold-light) 50%, var(--peacock-teal) 80%, transparent 100%);
-    box-shadow: 0 0 20px var(--saffron-glow), 0 0 40px rgba(255,123,46,0.1);
-    animation: silk-scanline 2.5s ease-in-out infinite;
+    background: linear-gradient(90deg, transparent 0%, var(--saffron) 25%, var(--gold-light) 50%, var(--peacock-teal) 75%, transparent 100%);
+    box-shadow: 0 0 16px var(--saffron-glow);
+    animation: silk-scanline 2.2s ease-in-out infinite;
     display: none;
 }
 
@@ -185,19 +188,19 @@
 
 
 /* ═══════════════════════════════════════════════
-   §3  MANDALA LOADING SPINNER
+   §3  MANDALA LOADING SPINNER (WHITE THEME)
    ═══════════════════════════════════════════════ */
 
 .trinetra-loader-overlay {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    width: 280px;
-    height: 280px;
+    width: 270px;
+    height: 270px;
     background: var(--surface-0);
     border: 1px solid var(--border-normal);
     border-radius: var(--radius-xl);
-    box-shadow: var(--glass-shadow), 0 24px 80px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-loader);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     display: flex;
@@ -205,40 +208,20 @@
     align-items: center;
     justify-content: center;
     z-index: 2147483647;
-    animation: silk-popup-in 0.5s var(--ease-spring);
+    animation: silk-popup-in 0.45s var(--ease-spring);
     overflow: hidden;
 }
 
 @keyframes silk-popup-in {
-    0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+    0% { transform: scale(0.92) translateY(20px); opacity: 0; }
     100% { transform: scale(1) translateY(0); opacity: 1; }
-}
-
-/* Decorative rangoli pattern behind mandala */
-.trinetra-loader-overlay::before {
-    content: '';
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at center, transparent 45%, rgba(255,123,46,0.03) 46%, rgba(255,123,46,0.03) 47%, transparent 48%),
-        radial-gradient(circle at center, transparent 65%, rgba(212,160,23,0.03) 66%, rgba(212,160,23,0.03) 67%, transparent 68%),
-        radial-gradient(circle at center, transparent 85%, rgba(24,180,184,0.03) 86%, rgba(24,180,184,0.03) 87%, transparent 88%);
-    animation: rangoli-pulse 4s ease-in-out infinite;
-    pointer-events: none;
-}
-
-@keyframes rangoli-pulse {
-    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
-    50% { transform: scale(1.1) rotate(30deg); opacity: 1; }
 }
 
 .trinetra-mandala {
     position: relative;
-    width: 140px;
-    height: 140px;
-    margin-bottom: 36px;
+    width: 130px;
+    height: 130px;
+    margin-bottom: 24px;
 }
 
 .trinetra-mandala-ring {
@@ -250,48 +233,43 @@
 
 .trinetra-mandala-ring:nth-child(1) {
     inset: 0;
-    border-width: 2px;
+    border-width: 2.5px;
     border-top-color: var(--saffron);
-    border-right-color: var(--gold);
-    filter: drop-shadow(0 0 6px var(--saffron-glow));
-    animation: mandala-spin 2.5s linear infinite;
+    border-right-color: var(--gold-light);
+    animation: mandala-spin 2.4s linear infinite;
 }
 
 .trinetra-mandala-ring:nth-child(2) {
     inset: 14px;
-    border-width: 1.5px;
+    border-width: 2px;
     border-bottom-color: var(--peacock-teal);
-    border-left-color: var(--indigo);
-    filter: drop-shadow(0 0 4px var(--peacock-glow));
-    animation: mandala-spin 3.5s linear infinite reverse;
+    border-left-color: var(--purple);
+    animation: mandala-spin 3.2s linear infinite reverse;
 }
 
 .trinetra-mandala-ring:nth-child(3) {
     inset: 28px;
     border-width: 1.5px;
-    border-top-color: var(--gold-light);
+    border-top-color: var(--gold);
     border-right-color: var(--lotus-pink);
-    filter: drop-shadow(0 0 3px var(--gold-shimmer));
-    animation: mandala-spin 4.5s linear infinite;
+    animation: mandala-spin 4s linear infinite;
 }
 
 .trinetra-mandala-ring:nth-child(4) {
-    inset: 42px;
-    border-width: 1px;
+    inset: 40px;
+    border-width: 1.5px;
     border-bottom-color: var(--saffron);
     border-left-color: var(--peacock-blue);
-    animation: mandala-spin 3s linear infinite reverse;
+    animation: mandala-spin 2.8s linear infinite reverse;
 }
 
 /* Centre third-eye */
 .trinetra-mandala-eye {
     position: absolute;
-    inset: 52px;
+    inset: 50px;
     border-radius: 50%;
-    background: radial-gradient(circle, var(--saffron) 0%, rgba(255,123,46,0.15) 50%, transparent 100%);
-    box-shadow:
-        0 0 30px var(--saffron-glow),
-        0 0 60px rgba(255,123,46,0.1);
+    background: radial-gradient(circle, var(--saffron) 0%, rgba(255, 123, 46, 0.12) 60%, transparent 100%);
+    box-shadow: 0 0 20px var(--saffron-glow);
     animation: eye-pulse 2s ease-in-out infinite;
 }
 
@@ -302,8 +280,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    filter: saturate(0) brightness(2.5);
+    font-size: 16px;
 }
 
 @keyframes mandala-spin {
@@ -311,41 +288,26 @@
 }
 
 @keyframes eye-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.7; box-shadow: 0 0 30px var(--saffron-glow), 0 0 60px rgba(255,123,46,0.1); }
-    50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 40px var(--saffron-glow), 0 0 80px rgba(255,123,46,0.15); }
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.15); opacity: 1; }
 }
 
 .trinetra-loader-text {
     font-family: var(--font-display);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 6px;
-    background: var(--silk-saffron);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: var(--text-primary);
     text-transform: uppercase;
-    animation: text-shimmer 3s ease-in-out infinite;
 }
 
 .trinetra-loader-subtext {
     font-family: var(--font-hindi);
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--gold);
-    margin-top: 10px;
-    letter-spacing: 1px;
-    opacity: 0.7;
-    animation: text-breathe 2.5s ease-in-out infinite;
-}
-
-@keyframes text-shimmer {
-    0%, 100% { opacity: 0.6; filter: brightness(1); }
-    50% { opacity: 1; filter: brightness(1.3); }
-}
-
-@keyframes text-breathe {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 0.9; }
+    margin-top: 6px;
+    letter-spacing: 0.5px;
 }
 
 
@@ -355,25 +317,21 @@
 
 .trinetra-toast {
     position: fixed;
-    bottom: 40px;
+    bottom: 36px;
     left: 50%;
-    transform: translateX(-50%) translateY(80px) scale(0.95);
-    background: var(--surface-glass);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--border-accent);
-    box-shadow: var(--glass-shadow);
+    transform: translateX(-50%) translateY(60px) scale(0.95);
+    background: var(--surface-0);
+    border: 1px solid var(--border-normal);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
     color: var(--text-primary);
-    padding: 14px 30px;
+    padding: 12px 24px;
     border-radius: 100px;
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.2px;
     z-index: 2147483647;
-    transition:
-        transform 0.5s var(--ease-spring),
-        opacity 0.5s var(--ease-silk);
+    transition: transform 0.4s var(--ease-spring), opacity 0.4s var(--ease-silk);
     opacity: 0;
 }
 
@@ -383,13 +341,14 @@
 }
 
 .trinetra-toast.error {
-    border-color: var(--fake-color);
+    border-color: var(--fake-border);
     color: var(--fake-color);
+    background: var(--fake-bg);
 }
 
 
 /* ═══════════════════════════════════════════════
-   §5  RESULT MODAL
+   §5  RESULT MODAL (PURE WHITE THEME)
    ═══════════════════════════════════════════════ */
 
 .trinetra-modal {
@@ -398,14 +357,14 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(5, 5, 6, 0.65);
-    backdrop-filter: blur(12px) saturate(120%);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    background: var(--surface-overlay);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2147483647;
-    animation: silk-fade-in 0.35s var(--ease-silk);
+    animation: silk-fade-in 0.3s var(--ease-silk);
 }
 
 @keyframes silk-fade-in {
@@ -413,12 +372,10 @@
     to { opacity: 1; }
 }
 
-/* ── Card with silk border ── */
+/* ── Card Modal Container ── */
 .trinetra-modal-content {
     background: var(--surface-0);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    width: 540px;
+    width: 530px;
     max-height: 88vh;
     overflow-y: auto;
     overflow-x: hidden;
@@ -427,53 +384,10 @@
     color: var(--text-primary);
     font-family: var(--font-body);
     border-radius: var(--radius-xl);
-    transform: scale(0.92) translateY(20px);
-    animation: silk-card-in 0.6s var(--ease-spring) forwards;
     border: 1px solid var(--border-normal);
-    box-shadow:
-        0 0 0 1px rgba(255, 123, 46, 0.06),
-        0 24px 80px rgba(0, 0, 0, 0.5),
-        0 8px 24px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-/* Peacock iridescent border — animated conic gradient */
-.trinetra-modal-content::before {
-    content: '';
-    position: absolute;
-    inset: -1.5px;
-    border-radius: calc(var(--radius-xl) + 1.5px);
-    background: conic-gradient(
-        from var(--peacock-angle, 0deg),
-        rgba(255, 123, 46, 0.4),
-        rgba(212, 160, 23, 0.3),
-        rgba(24, 180, 184, 0.25),
-        rgba(91, 95, 199, 0.2),
-        rgba(230, 74, 138, 0.2),
-        rgba(255, 123, 46, 0.4)
-    );
-    z-index: -1;
-    animation: peacock-shimmer 8s linear infinite;
-    opacity: 0.6;
-}
-
-.trinetra-modal-content::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius-xl);
-    background: var(--surface-0);
-    z-index: -1;
-}
-
-@property --peacock-angle {
-    syntax: '<angle>';
-    initial-value: 0deg;
-    inherits: false;
-}
-
-@keyframes peacock-shimmer {
-    to { --peacock-angle: 360deg; }
+    box-shadow: var(--shadow-card);
+    transform: scale(0.94) translateY(16px);
+    animation: silk-card-in 0.45s var(--ease-spring) forwards;
 }
 
 @keyframes silk-card-in {
@@ -483,28 +397,14 @@
     }
 }
 
-/* Silk shine overlay on card */
 .trinetra-modal-inner {
     position: relative;
-    padding: 36px;
-}
-
-.trinetra-modal-inner::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 160px;
-    background: var(--silk-night);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    pointer-events: none;
-    opacity: 0.5;
+    padding: 28px 30px 24px;
 }
 
 /* Custom scrollbar */
 .trinetra-modal-content::-webkit-scrollbar {
-    width: 4px;
+    width: 5px;
 }
 
 .trinetra-modal-content::-webkit-scrollbar-track {
@@ -512,12 +412,12 @@
 }
 
 .trinetra-modal-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 123, 46, 0.2);
+    background: var(--border-strong);
     border-radius: 4px;
 }
 
 .trinetra-modal-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 123, 46, 0.35);
+    background: var(--text-tertiary);
 }
 
 
@@ -527,46 +427,27 @@
 
 .trinetra-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 20px;
-    margin-bottom: 28px;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 22px;
     position: relative;
     z-index: 1;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.1s forwards;
-}
-
-/* Silk thread separator */
-.trinetra-header::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        var(--gold-soft) 15%,
-        rgba(255, 123, 46, 0.15) 50%,
-        var(--gold-soft) 85%,
-        transparent 100%
-    );
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .trinetra-brand-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .trinetra-brand {
     font-family: var(--font-display);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
-    letter-spacing: 5px;
-    background: var(--silk-saffron);
+    letter-spacing: 2px;
+    background: var(--gradient-brand);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -579,60 +460,58 @@
 .trinetra-brand span {
     -webkit-text-fill-color: var(--text-tertiary);
     font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 2px;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 
 .trinetra-hindi-sub {
     font-family: var(--font-hindi);
     font-size: 11px;
     color: var(--gold);
-    letter-spacing: 0.5px;
-    opacity: 0.7;
+    letter-spacing: 0.3px;
+    font-weight: 500;
 }
 
 .trinetra-header-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
 }
 
 .trinetra-latency {
     font-family: var(--font-body);
     font-size: 11px;
     font-weight: 600;
-    color: var(--peacock-teal);
-    background: rgba(24, 180, 184, 0.06);
-    padding: 5px 14px;
-    border: 1px solid rgba(24, 180, 184, 0.12);
+    color: #0F766E;
+    background: #F0FDFA;
+    padding: 4px 10px;
+    border: 1px solid #CCFBF1;
     border-radius: 100px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
 .trinetra-close {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-tertiary);
     cursor: pointer;
-    z-index: 10;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: var(--surface-2);
+    background: var(--surface-1);
     border: 1px solid var(--border-normal);
-    transition: all 0.3s var(--ease-silk);
+    transition: all 0.2s var(--ease-spring);
     flex-shrink: 0;
 }
 
 .trinetra-close:hover {
     color: var(--text-primary);
-    border-color: var(--saffron);
-    background: var(--saffron-soft);
-    transform: rotate(90deg) scale(1.05);
-    box-shadow: 0 0 16px rgba(255, 123, 46, 0.15);
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+    transform: scale(1.08);
 }
 
 
@@ -644,40 +523,34 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     position: relative;
     z-index: 1;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.2s forwards;
 }
 
 .trinetra-gauge-svg {
-    width: 220px;
-    height: 120px;
+    width: 200px;
+    height: 110px;
     overflow: visible;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
 }
 
 .trinetra-gauge-track {
     fill: none;
     stroke: var(--surface-3);
-    stroke-width: 10;
+    stroke-width: 9;
     stroke-linecap: round;
 }
 
 .trinetra-gauge-fill {
     fill: none;
-    stroke-width: 10;
+    stroke-width: 9;
     stroke-linecap: round;
-    transition:
-        stroke-dashoffset 1.8s var(--ease-spring),
-        stroke 0.5s var(--ease-silk);
-    filter: drop-shadow(0 0 8px currentColor);
+    transition: stroke-dashoffset 1.4s var(--ease-spring), stroke 0.4s ease;
 }
 
 .trinetra-gauge-value {
     font-family: var(--font-display);
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 800;
     fill: var(--text-primary);
     text-anchor: middle;
@@ -686,8 +559,8 @@
 
 .trinetra-gauge-unit {
     font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 9.5px;
+    font-weight: 700;
     fill: var(--text-tertiary);
     text-anchor: middle;
     letter-spacing: 2px;
@@ -696,82 +569,67 @@
 
 
 /* ═══════════════════════════════════════════════
-   §8  VERDICT PANEL
+   §8  VERDICT PANEL (WHITE THEME HIGH CONTRAST)
    ═══════════════════════════════════════════════ */
 
 .trinetra-verdict-main {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 28px 24px 24px;
-    background: var(--surface-1);
-    border: 1px solid var(--border-strong);
+    padding: 22px 20px 18px;
     border-radius: var(--radius-lg);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     position: relative;
     overflow: hidden;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.3s forwards;
-    transition: border-color 0.4s var(--ease-silk), background 0.4s var(--ease-silk);
+    transition: all 0.3s ease;
 }
 
-/* Silk sheen overlay */
-.trinetra-verdict-main::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-shine);
-    pointer-events: none;
-    border-radius: var(--radius-lg);
-}
-
-/* Yantra corner marks — sacred geometry */
+/* Yantra corner marks */
 .trinetra-yantra-tl,
 .trinetra-yantra-tr,
 .trinetra-yantra-bl,
 .trinetra-yantra-br {
     position: absolute;
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     border-style: solid;
-    border-color: var(--gold);
-    opacity: 0.2;
-    transition: opacity 0.4s, border-color 0.4s;
+    opacity: 0.35;
 }
 
 .trinetra-yantra-tl {
-    top: 8px;
-    left: 8px;
+    top: 7px;
+    left: 7px;
     border-width: 2px 0 0 2px;
     border-radius: 4px 0 0 0;
 }
 
 .trinetra-yantra-tr {
-    top: 8px;
-    right: 8px;
+    top: 7px;
+    right: 7px;
     border-width: 2px 2px 0 0;
     border-radius: 0 4px 0 0;
 }
 
 .trinetra-yantra-bl {
-    bottom: 8px;
-    left: 8px;
+    bottom: 7px;
+    left: 7px;
     border-width: 0 0 2px 2px;
     border-radius: 0 0 0 4px;
 }
 
 .trinetra-yantra-br {
-    bottom: 8px;
-    right: 8px;
+    bottom: 7px;
+    right: 7px;
     border-width: 0 2px 2px 0;
     border-radius: 0 0 4px 0;
 }
 
-/* Status states */
+/* Status States */
 .trinetra-verdict-main.status-fake {
-    border-color: rgba(255, 71, 87, 0.2);
-    background: linear-gradient(135deg, var(--fake-soft) 0%, var(--surface-1) 60%);
-    box-shadow: inset 0 0 60px rgba(255, 71, 87, 0.04);
+    background: linear-gradient(135deg, #FEF2F2 0%, #FFF5F5 100%);
+    border: 1px solid var(--fake-border);
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.06);
 }
 
 .trinetra-verdict-main.status-fake .trinetra-yantra-tl,
@@ -779,13 +637,12 @@
 .trinetra-verdict-main.status-fake .trinetra-yantra-bl,
 .trinetra-verdict-main.status-fake .trinetra-yantra-br {
     border-color: var(--fake-color);
-    opacity: 0.3;
 }
 
 .trinetra-verdict-main.status-real {
-    border-color: rgba(46, 213, 115, 0.2);
-    background: linear-gradient(135deg, var(--real-soft) 0%, var(--surface-1) 60%);
-    box-shadow: inset 0 0 60px rgba(46, 213, 115, 0.04);
+    background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+    border: 1px solid var(--real-border);
+    box-shadow: 0 4px 16px rgba(5, 150, 105, 0.06);
 }
 
 .trinetra-verdict-main.status-real .trinetra-yantra-tl,
@@ -793,125 +650,127 @@
 .trinetra-verdict-main.status-real .trinetra-yantra-bl,
 .trinetra-verdict-main.status-real .trinetra-yantra-br {
     border-color: var(--real-color);
-    opacity: 0.3;
 }
 
 .trinetra-verdict-label {
     font-family: var(--font-display);
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 800;
-    letter-spacing: 8px;
-    margin-bottom: 6px;
+    letter-spacing: 6px;
+    margin-bottom: 4px;
     text-transform: uppercase;
-    position: relative;
+    line-height: 1;
 }
 
 .status-fake .trinetra-verdict-label {
     color: var(--fake-color);
-    text-shadow: 0 0 30px var(--fake-glow), 0 0 60px rgba(255, 71, 87, 0.1);
 }
 
 .status-real .trinetra-verdict-label {
     color: var(--real-color);
-    text-shadow: 0 0 30px var(--real-glow), 0 0 60px rgba(46, 213, 115, 0.1);
 }
 
 .trinetra-verdict-sub {
     font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--text-tertiary);
-    letter-spacing: 3px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 2px;
     text-transform: uppercase;
 }
 
-/* Hindi verdict label */
+.status-fake .trinetra-verdict-sub {
+    color: #991B1B;
+}
+
+.status-real .trinetra-verdict-sub {
+    color: #065F46;
+}
+
 .trinetra-verdict-hindi {
     font-family: var(--font-hindi);
-    font-size: 12px;
-    color: var(--gold);
-    margin-top: 8px;
-    opacity: 0.6;
-    letter-spacing: 0.5px;
+    font-size: 11.5px;
+    margin-top: 6px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.status-fake .trinetra-verdict-hindi {
+    color: #B91C1C;
+}
+
+.status-real .trinetra-verdict-hindi {
+    color: #047857;
 }
 
 
 /* ═══════════════════════════════════════════════
-   §9  FACE + GRAD-CAM ROW
+   §9  FACE + GRAD-CAM VISUALS
    ═══════════════════════════════════════════════ */
 
 .trinetra-visuals-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 18px;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.4s forwards;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
 .trinetra-visual-card {
-    background: var(--surface-1);
+    background: var(--surface-0);
     border: 1px solid var(--border-normal);
     border-radius: var(--radius-md);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: border-color 0.3s var(--ease-silk), transform 0.3s var(--ease-silk);
-    position: relative;
-}
-
-.trinetra-visual-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-shine);
-    pointer-events: none;
-    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-subtle);
+    transition: all 0.25s var(--ease-spring);
 }
 
 .trinetra-visual-card:hover {
-    border-color: var(--border-accent);
-    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .trinetra-visual-card-label {
     font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 9.5px;
+    font-weight: 700;
     color: var(--text-tertiary);
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    padding: 12px 14px 8px;
+    padding: 10px 12px 6px;
     width: 100%;
     text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+    background: #FAFAFA;
 }
 
 .trinetra-face-crop-wrap {
-    padding: 14px;
+    padding: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 
 .trinetra-face-crop-circle {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     overflow: hidden;
-    border: 3px solid var(--border-strong);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    transition: border-color 0.4s var(--ease-silk), box-shadow 0.4s var(--ease-silk);
+    border: 2.5px solid var(--border-normal);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
 }
 
 .status-fake-parent .trinetra-face-crop-circle {
     border-color: var(--fake-color);
-    box-shadow: 0 0 20px var(--fake-glow), 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 16px var(--fake-glow);
 }
 
 .status-real-parent .trinetra-face-crop-circle {
     border-color: var(--real-color);
-    box-shadow: 0 0 20px var(--real-glow), 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 16px var(--real-glow);
 }
 
 .trinetra-face-crop-circle img {
@@ -921,19 +780,20 @@
 }
 
 .trinetra-no-face {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
-    border: 2px dashed var(--text-hint);
+    border: 1.5px dashed var(--border-strong);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
+    font-size: 9.5px;
     color: var(--text-tertiary);
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     text-align: center;
     padding: 8px;
+    background: var(--surface-1);
 }
 
 .trinetra-gradcam-wrap {
@@ -941,28 +801,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 
 .trinetra-gradcam-img {
     width: 100%;
-    max-height: 120px;
+    max-height: 100px;
     object-fit: contain;
     border-radius: var(--radius-sm);
-    opacity: 0.85;
-    transition: opacity 0.3s var(--ease-silk), transform 0.3s var(--ease-silk);
+    border: 1px solid var(--border-normal);
+    transition: transform 0.25s ease;
 }
 
 .trinetra-gradcam-img:hover {
-    opacity: 1;
-    transform: scale(1.03);
+    transform: scale(1.02);
 }
 
 .trinetra-no-gradcam {
-    padding: 16px 12px;
+    padding: 24px 10px;
     text-align: center;
-    font-size: 9px;
+    font-size: 9.5px;
     color: var(--text-tertiary);
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
@@ -975,178 +835,75 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 18px;
-    position: relative;
-    z-index: 1;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.5s forwards;
+    margin-bottom: 16px;
 }
 
 .trinetra-result-cell {
     background: var(--surface-1);
     border: 1px solid var(--border-normal);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.3s var(--ease-silk), transform 0.3s var(--ease-silk);
-}
-
-.trinetra-result-cell::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-shine);
-    pointer-events: none;
+    transition: all 0.2s var(--ease-spring);
 }
 
 .trinetra-result-cell:hover {
-    border-color: var(--border-accent);
+    background: #FFFFFF;
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-subtle);
     transform: translateY(-1px);
 }
 
 .trinetra-label {
     font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 9.5px;
+    font-weight: 700;
     color: var(--text-tertiary);
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .trinetra-value {
     font-family: var(--font-display);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .trinetra-value.fake-text {
     color: var(--fake-color);
-    text-shadow: 0 0 12px rgba(255, 71, 87, 0.15);
 }
 
 .trinetra-value.real-text {
     color: var(--real-color);
-    text-shadow: 0 0 12px rgba(46, 213, 115, 0.15);
 }
 
 .trinetra-value.muted {
     color: var(--text-tertiary);
     font-style: italic;
-    font-size: 13px;
-}
-
-
-/* ═══════════════════════════════════════════════
-   §11  EXIF DATA
-   ═══════════════════════════════════════════════ */
-
-.trinetra-exif-card {
-    background: var(--surface-1);
-    border: 1px solid var(--border-normal);
-    border-radius: var(--radius-md);
-    padding: 18px 20px;
-    margin-bottom: 18px;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.55s forwards;
-    position: relative;
-    overflow: hidden;
-}
-
-.trinetra-exif-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    background: var(--silk-peacock);
-    border-radius: 3px 0 0 3px;
-}
-
-.trinetra-exif-header {
-    font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--text-tertiary);
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-}
-
-.trinetra-exif-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-}
-
-.trinetra-exif-row {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.trinetra-exif-key {
-    font-family: var(--font-body);
-    font-size: 10px;
-    color: var(--text-tertiary);
-}
-
-.trinetra-exif-value {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 11px;
-    color: var(--text-primary);
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.trinetra-exif-empty {
-    font-family: var(--font-body);
     font-size: 12px;
-    color: var(--text-tertiary);
-    font-style: italic;
 }
 
 
 /* ═══════════════════════════════════════════════
-   §12  FORENSIC SUMMARY
+   §11  FORENSIC SUMMARY
    ═══════════════════════════════════════════════ */
 
-/* ── Summary ── */
 .trinetra-summary {
     font-family: var(--font-body);
-    font-size: 13px;
-    line-height: 1.8;
+    font-size: 12.5px;
+    line-height: 1.65;
     font-weight: 400;
     color: var(--text-secondary);
     background: var(--surface-1);
-    padding: 18px 20px;
+    padding: 14px 16px;
     border: 1px solid var(--border-normal);
+    border-left: 3px solid var(--saffron);
     border-radius: var(--radius-md);
-    position: relative;
-    z-index: 1;
-    margin-bottom: 18px;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.6s forwards;
-    overflow: hidden;
-}
-
-.trinetra-summary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    background: var(--silk-saffron);
-    border-radius: 3px 0 0 3px;
+    margin-bottom: 16px;
 }
 
 
@@ -1157,71 +914,47 @@
 .trinetra-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-    opacity: 0;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.7s forwards;
+    gap: 9px;
+    margin-bottom: 16px;
 }
 
 .trinetra-btn {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 10px 18px;
+    gap: 6px;
+    padding: 9px 16px;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--border-normal);
-    background: var(--surface-1);
+    border: 1px solid var(--border-strong);
+    background: #FFFFFF;
     color: var(--text-secondary);
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s var(--ease-silk);
-    letter-spacing: 0.5px;
-    position: relative;
-    overflow: hidden;
-}
-
-.trinetra-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-shine);
-    pointer-events: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: all 0.2s var(--ease-spring);
 }
 
 .trinetra-btn:hover {
-    background: var(--saffron-soft);
-    border-color: var(--saffron);
-    color: var(--saffron);
+    background: var(--surface-1);
+    border-color: var(--text-tertiary);
+    color: var(--text-primary);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(255, 123, 46, 0.1);
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
 }
 
 .trinetra-btn:active {
     transform: translateY(0);
 }
 
-.trinetra-btn-icon {
-    font-size: 13px;
-    line-height: 1;
-}
-
 .trinetra-btn.success {
-    border-color: var(--real-color);
+    background: var(--real-bg);
+    border-color: var(--real-border);
     color: var(--real-color);
-    background: var(--real-soft);
 }
 
-.trinetra-btn.retry-btn {
-    border-color: var(--saffron);
-    color: var(--saffron);
-    background: var(--saffron-soft);
-}
-
-.trinetra-btn.retry-btn:hover {
-    background: rgba(255, 123, 46, 0.15);
-    box-shadow: 0 4px 20px rgba(255, 123, 46, 0.15);
+.trinetra-btn-icon {
+    font-size: 12px;
 }
 
 .trinetra-actions-spacer {
@@ -1238,61 +971,37 @@
     justify-content: space-between;
     align-items: center;
     font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 500;
+    font-size: 10px;
+    font-weight: 600;
     color: var(--text-hint);
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    position: relative;
-    z-index: 1;
-    opacity: 0;
     padding-top: 14px;
-    animation: silk-section-in 0.6s var(--ease-spring) 0.8s forwards;
-}
-
-/* Top separator — silk thread */
-.trinetra-footer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        var(--gold-soft) 20%,
-        rgba(255, 123, 46, 0.1) 50%,
-        var(--gold-soft) 80%,
-        transparent 100%
-    );
+    border-top: 1px solid var(--border-subtle);
 }
 
 .trinetra-footer-source {
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--text-tertiary);
 }
 
 .trinetra-footer-source-dot {
-    width: 5px;
-    height: 5px;
+    width: 6.5px;
+    height: 6.5px;
     border-radius: 50%;
     display: inline-block;
 }
 
 .trinetra-footer-source-dot.online {
     background: var(--real-color);
-    box-shadow: 0 0 8px var(--real-glow);
-    animation: dot-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 0 2.5px rgba(5, 150, 105, 0.2);
 }
 
 .trinetra-footer-source-dot.offline {
-    background: var(--text-tertiary);
-}
-
-@keyframes dot-pulse {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
+    background: var(--fake-color);
+    box-shadow: 0 0 0 2.5px rgba(220, 38, 38, 0.2);
 }
 
 .trinetra-footer-esc {
@@ -1301,22 +1010,20 @@
 
 
 /* ═══════════════════════════════════════════════
-   §14  HISTORY DRAWER
+   §14  HISTORY DRAWER (WHITE THEME)
    ═══════════════════════════════════════════════ */
 
 .trinetra-history-drawer {
     position: fixed;
     top: 0;
-    right: -400px;
-    width: 400px;
+    right: -380px;
+    width: 380px;
     height: 100vh;
-    background: var(--surface-0);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    background: #FFFFFF;
     border-left: 1px solid var(--border-normal);
-    box-shadow: -12px 0 60px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-drawer);
     z-index: 2147483647;
-    transition: right 0.5s var(--ease-spring);
+    transition: right 0.45s var(--ease-spring);
     display: flex;
     flex-direction: column;
 }
@@ -1329,28 +1036,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 28px 24px;
-    border-bottom: 1px solid var(--border-normal);
-    position: relative;
-}
-
-/* Decorative bottom border */
-.trinetra-history-header::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold-soft), rgba(255,123,46,0.1), var(--gold-soft), transparent);
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: #FAFAFA;
 }
 
 .trinetra-history-title {
     font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    background: var(--silk-saffron);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: var(--gradient-brand);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1358,24 +1054,24 @@
 }
 
 .trinetra-history-close {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: var(--surface-2);
+    background: #FFFFFF;
     border: 1px solid var(--border-normal);
     color: var(--text-tertiary);
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s var(--ease-silk);
+    transition: all 0.2s ease;
 }
 
 .trinetra-history-close:hover {
-    border-color: var(--saffron);
+    border-color: var(--border-strong);
     color: var(--text-primary);
-    background: var(--saffron-soft);
+    background: var(--surface-1);
 }
 
 .trinetra-history-list {
@@ -1384,59 +1080,40 @@
     padding: 16px;
 }
 
-.trinetra-history-list::-webkit-scrollbar {
-    width: 3px;
-}
-
-.trinetra-history-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 123, 46, 0.15);
-    border-radius: 3px;
-}
-
 .trinetra-history-item {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px;
+    gap: 12px;
+    padding: 13px 15px;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-subtle);
-    margin-bottom: 10px;
-    transition: all 0.3s var(--ease-silk);
-    cursor: default;
-    position: relative;
-    overflow: hidden;
-}
-
-.trinetra-history-item::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-shine);
-    pointer-events: none;
+    background: var(--surface-1);
+    border: 1px solid var(--border-normal);
+    margin-bottom: 9px;
+    transition: all 0.2s var(--ease-spring);
 }
 
 .trinetra-history-item:hover {
-    background: var(--surface-2);
-    border-color: var(--border-normal);
+    background: #FFFFFF;
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-subtle);
     transform: translateX(-2px);
 }
 
 .trinetra-history-verdict-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
-    transition: box-shadow 0.3s;
 }
 
 .trinetra-history-verdict-dot.fake {
     background: var(--fake-color);
-    box-shadow: 0 0 10px var(--fake-glow);
+    box-shadow: 0 0 0 2.5px rgba(220, 38, 38, 0.2);
 }
 
 .trinetra-history-verdict-dot.real {
     background: var(--real-color);
-    box-shadow: 0 0 10px var(--real-glow);
+    box-shadow: 0 0 0 2.5px rgba(5, 150, 105, 0.2);
 }
 
 .trinetra-history-info {
@@ -1449,37 +1126,33 @@
     font-size: 13px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 3px;
-    letter-spacing: 1px;
+    margin-bottom: 2px;
 }
 
 .trinetra-history-info-meta {
-    font-size: 10px;
+    font-size: 10.5px;
     color: var(--text-tertiary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .trinetra-history-confidence {
     font-family: var(--font-display);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
+    color: var(--text-primary);
     flex-shrink: 0;
 }
 
 .trinetra-history-empty {
     text-align: center;
-    padding: 60px 24px;
+    padding: 60px 20px;
     font-size: 12px;
     color: var(--text-tertiary);
-    letter-spacing: 1px;
-    line-height: 1.8;
+    line-height: 1.6;
 }
 
 
 /* ═══════════════════════════════════════════════
-   §15  ERROR STATE
+   §15  ERROR PANEL
    ═══════════════════════════════════════════════ */
 
 .trinetra-error-panel {
@@ -1487,64 +1160,37 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 48px 28px;
+    padding: 36px 20px;
     text-align: center;
 }
 
 .trinetra-error-icon {
-    font-size: 44px;
-    margin-bottom: 20px;
-    opacity: 0.85;
-    animation: error-shake 0.6s var(--ease-spring);
-}
-
-@keyframes error-shake {
-    0%, 100% { transform: translateX(0); }
-    15% { transform: translateX(-6px) rotate(-2deg); }
-    30% { transform: translateX(5px) rotate(1deg); }
-    45% { transform: translateX(-4px) rotate(-1deg); }
-    60% { transform: translateX(3px); }
-    75% { transform: translateX(-2px); }
+    font-size: 38px;
+    margin-bottom: 16px;
 }
 
 .trinetra-error-title {
     font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 4px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
     color: var(--fake-color);
     text-transform: uppercase;
-    margin-bottom: 10px;
-    text-shadow: 0 0 20px rgba(255, 71, 87, 0.15);
+    margin-bottom: 8px;
 }
 
 .trinetra-error-msg {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    line-height: 1.7;
-    margin-bottom: 24px;
-    max-width: 340px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 320px;
 }
 
 
 /* ═══════════════════════════════════════════════
-   §16  SHARED ANIMATIONS
+   §16  PRINT & ACCESSIBILITY
    ═══════════════════════════════════════════════ */
 
-@keyframes silk-section-in {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-        filter: blur(4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-        filter: blur(0);
-    }
-}
-
-/* ── Focus ring override for all interactive ── */
 .trinetra-btn:focus-visible,
 .trinetra-close:focus-visible,
 .trinetra-history-close:focus-visible {
@@ -1552,7 +1198,6 @@
     outline-offset: 2px;
 }
 
-/* ── Print safety ── */
 @media print {
     .trinetra-modal,
     .trinetra-toast,

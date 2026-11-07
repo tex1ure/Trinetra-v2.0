@@ -6,7 +6,7 @@
 
   function removeExistingUI() {
     document.querySelectorAll(
-      '.trinetra-selection-overlay, .trinetra-selection-box, .trinetra-loader-overlay, .trinetra-modal, .trinetra-history-drawer'
+      '.trinetra-selection-overlay, .trinetra-selection-box, .trinetra-loader-overlay, .trinetra-modal, .trinetra-history-drawer, .trinetra-toast'
     ).forEach((el) => el.remove());
     if (activeCleanup) {
       activeCleanup();
@@ -26,7 +26,7 @@
         <div class="trinetra-mandala-ring"></div>
         <div class="trinetra-mandala-eye"></div>
       </div>
-      <div class="trinetra-loader-text">ANALYZING</div>
+      <div class="trinetra-loader-text">ANALYZING MEDIA</div>
       <div class="trinetra-loader-subtext">त्रिनेत्र — सत्य का अन्वेषण</div>
     `;
     document.body.appendChild(loader);
@@ -60,10 +60,84 @@
     `;
     modal.querySelector('.trinetra-error-msg').textContent = String(errorMsg || 'Analysis failed.');
     document.body.appendChild(modal);
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') removeExistingUI();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    activeCleanup = () => window.removeEventListener('keydown', onKeyDown);
+
     modal.querySelector('#tri-close-btn').addEventListener('click', removeExistingUI);
     modal.addEventListener('click', (e) => {
       if (e.target === modal) removeExistingUI();
     });
+  }
+
+  function showToast(text, isError = false) {
+    const existing = document.querySelector('.trinetra-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `trinetra-toast ${isError ? 'error' : ''}`;
+    toast.textContent = text;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 400);
+    }, 2400);
+  }
+
+  function toggleHistoryDrawer() {
+    let drawer = document.querySelector('.trinetra-history-drawer');
+    if (drawer) {
+      drawer.classList.toggle('open');
+      return;
+    }
+
+    drawer = document.createElement('div');
+    drawer.className = 'trinetra-history-drawer';
+    drawer.innerHTML = `
+      <div class="trinetra-history-header">
+        <span class="trinetra-history-title">Scan History</span>
+        <div class="trinetra-history-close">✕</div>
+      </div>
+      <div class="trinetra-history-list">
+        <div class="trinetra-history-empty">Loading history...</div>
+      </div>
+    `;
+    document.body.appendChild(drawer);
+
+    drawer.querySelector('.trinetra-history-close').addEventListener('click', () => {
+      drawer.classList.remove('open');
+    });
+
+    chrome.storage.local.get({ scanHistory: [] }, (res) => {
+      const listEl = drawer.querySelector('.trinetra-history-list');
+      const items = res.scanHistory || [];
+      if (!items.length) {
+        listEl.innerHTML = `<div class="trinetra-history-empty">No previous scans recorded yet.</div>`;
+        return;
+      }
+      listEl.innerHTML = items
+        .map((item) => {
+          const isFk = item.verdict === 'FAKE';
+          return `
+            <div class="trinetra-history-item">
+              <span class="trinetra-history-verdict-dot ${isFk ? 'fake' : 'real'}"></span>
+              <div class="trinetra-history-info">
+                <div class="trinetra-history-info-verdict">${item.verdict || 'UNKNOWN'}</div>
+                <div class="trinetra-history-info-meta">${item.timestamp || 'Just now'}</div>
+              </div>
+              <div class="trinetra-history-confidence">${Number(item.confidence || 0).toFixed(1)}%</div>
+            </div>
+          `;
+        })
+        .join('');
+    });
+
+    requestAnimationFrame(() => drawer.classList.add('open'));
   }
 
   function showResultModal(result) {
@@ -87,7 +161,7 @@
             </div>
             <div class="trinetra-header-right">
               <span class="trinetra-latency"></span>
-              <div class="trinetra-close" id="tri-close-btn">✕</div>
+              <div class="trinetra-close" id="tri-close-btn" title="Close (Esc)">✕</div>
             </div>
           </div>
 
@@ -109,9 +183,10 @@
             <div class="trinetra-yantra-tr"></div>
             <div class="trinetra-yantra-bl"></div>
             <div class="trinetra-yantra-br"></div>
-            <div>
+            <div style="text-align: center;">
               <div class="trinetra-verdict-label"></div>
               <div class="trinetra-verdict-sub">CONSOLIDATED FORENSIC VERDICT</div>
+              <div class="trinetra-verdict-hindi">${isFake ? 'संदिग्ध — छेड़छाड़ का संकेत' : 'प्रामाणिक — कोई छेड़छाड़ नहीं'}</div>
             </div>
           </div>
 
@@ -151,6 +226,16 @@
 
           <div class="trinetra-summary"></div>
 
+          <div class="trinetra-actions">
+            <button class="trinetra-btn" id="trinetra-copy-btn">
+              <span class="trinetra-btn-icon">📋</span> Copy Report
+            </button>
+            <button class="trinetra-btn" id="trinetra-history-btn">
+              <span class="trinetra-btn-icon">📜</span> History
+            </button>
+            <div class="trinetra-actions-spacer"></div>
+          </div>
+
           <div class="trinetra-footer">
             <div class="trinetra-footer-source">
               <span class="trinetra-footer-source-dot online"></span>
@@ -162,14 +247,41 @@
       </div>
     `;
 
-    // Safely assign dynamic textual content using textContent to prevent XSS
+    // Safely assign text content to prevent XSS
     modal.querySelector('.trinetra-latency').textContent = `${Math.round(result.latency_ms || 0)}ms`;
     modal.querySelector('.trinetra-verdict-label').textContent = String(result.primary_verdict || 'UNKNOWN');
     modal.querySelector('.trinetra-local-val').textContent = `${result.local_label || 'UNKNOWN'} (${Number(result.local_confidence || 0).toFixed(1)}%)`;
     modal.querySelector('.trinetra-rd-val').textContent = String(result.rd_status || 'LOCAL_ONLY');
-    modal.querySelector('.trinetra-summary').textContent = String(result.forensic_summary || '');
+    modal.querySelector('.trinetra-summary').textContent = String(result.forensic_summary || 'Forensic analysis completed.');
 
     document.body.appendChild(modal);
+
+    // Copy report event
+    const copyBtn = modal.querySelector('#trinetra-copy-btn');
+    copyBtn.addEventListener('click', () => {
+      const reportText = [
+        `[TRINETRA v2.0 FORENSIC ANALYSIS REPORT]`,
+        `Primary Verdict: ${result.primary_verdict || 'UNKNOWN'} (${conf}%)`,
+        `Local Hybrid Model: ${result.local_label || 'UNKNOWN'} (${Number(result.local_confidence || 0).toFixed(1)}%)`,
+        `Cloud Engine: ${result.rd_status || 'LOCAL_ONLY'}`,
+        `Latency: ${Math.round(result.latency_ms || 0)}ms`,
+        `Summary: ${result.forensic_summary || ''}`,
+      ].join('\n');
+
+      navigator.clipboard.writeText(reportText).then(() => {
+        copyBtn.classList.add('success');
+        copyBtn.innerHTML = `<span class="trinetra-btn-icon">✓</span> Copied!`;
+        setTimeout(() => {
+          copyBtn.classList.remove('success');
+          copyBtn.innerHTML = `<span class="trinetra-btn-icon">📋</span> Copy Report`;
+        }, 2000);
+      });
+    });
+
+    // History button event
+    modal.querySelector('#trinetra-history-btn').addEventListener('click', () => {
+      toggleHistoryDrawer();
+    });
 
     const onKeyDown = (e) => {
       if (e.key === 'Escape') removeExistingUI();

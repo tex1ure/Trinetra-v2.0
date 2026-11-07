@@ -7,67 +7,103 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <!-- ── Header ── -->
-  <div class="tri-header">
-    <img src="icons/logo.png" alt="Trinetra Logo" class="tri-logo">
-    <div class="tri-brand">
-      <span class="tri-title">TRINETRA</span>
-      <span class="tri-subtitle">Deepfake Forensic Analyzer</span>
-    </div>
-  </div>
-
-  <!-- ── Divider ── -->
-  <div class="tri-divider"></div>
-
-  <!-- ── Analysis Engine Toggles ── -->
-  <div class="tri-section">
-    <div class="tri-section-label">
-      <img src="icons/shield.png" class="tri-section-icon" alt="">
-      ANALYSIS ENGINE
-    </div>
-
-    <div class="tri-toggle-row" id="toggle-local">
-      <div class="tri-toggle-info">
-        <span class="tri-toggle-name">Local Model</span>
-        <span class="tri-toggle-desc">Hybrid CNN · On-Device</span>
+  <div class="tri-card">
+    <!-- ── Header ── -->
+    <header class="tri-header">
+      <div class="tri-header-left">
+        <img src="icons/logo.png" alt="Trinetra Logo" class="tri-logo">
+        <div class="tri-brand">
+          <div class="tri-title-row">
+            <span class="tri-title">TRINETRA</span>
+            <span class="tri-badge">v2.0</span>
+          </div>
+          <span class="tri-subtitle">AI Forensic Deepfake Detector</span>
+        </div>
       </div>
-      <label class="tri-switch">
-        <input type="checkbox" id="switch-local" checked>
-        <span class="tri-slider"></span>
-      </label>
-    </div>
+    </header>
 
-    <div class="tri-toggle-row" id="toggle-cloud">
-      <div class="tri-toggle-info">
-        <span class="tri-toggle-name">Cloud API</span>
-        <span class="tri-toggle-desc">Reality Defender · Remote</span>
+    <!-- ── Divider ── -->
+    <div class="tri-divider"></div>
+
+    <!-- ── Analysis Engine Toggles ── -->
+    <section class="tri-section">
+      <div class="tri-section-header">
+        <span class="tri-section-label">DETECTION ENGINES</span>
+        <span class="tri-section-hint">Dual-Layer</span>
       </div>
-      <label class="tri-switch">
-        <input type="checkbox" id="switch-cloud" checked>
-        <span class="tri-slider"></span>
-      </label>
+
+      <div class="tri-toggle-row" id="toggle-local">
+        <div class="tri-toggle-left">
+          <div class="tri-engine-icon local">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <div class="tri-toggle-info">
+            <span class="tri-toggle-name">Local CNN Hybrid</span>
+            <span class="tri-toggle-desc">On-Device · Privacy First</span>
+          </div>
+        </div>
+        <label class="tri-switch" aria-label="Toggle Local Engine">
+          <input type="checkbox" id="switch-local" checked>
+          <span class="tri-slider"></span>
+        </label>
+      </div>
+
+      <div class="tri-toggle-row" id="toggle-cloud">
+        <div class="tri-toggle-left">
+          <div class="tri-engine-icon cloud">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+            </svg>
+          </div>
+          <div class="tri-toggle-info">
+            <span class="tri-toggle-name">Cloud API Layer</span>
+            <span class="tri-toggle-desc">Reality Defender · Deep Analysis</span>
+          </div>
+        </div>
+        <label class="tri-switch" aria-label="Toggle Cloud API">
+          <input type="checkbox" id="switch-cloud" checked>
+          <span class="tri-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Warning Toast ── -->
+    <div class="tri-warning" id="tri-warning">
+      <svg class="tri-warning-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>At least one engine must remain active.</span>
     </div>
-  </div>
 
-  <!-- ── Warning Toast ── -->
-  <div class="tri-warning" id="tri-warning">
-    <img src="icons/alert.png" class="tri-warning-icon" alt="">
-    <span>At least one engine must be active.</span>
-  </div>
-
-  <!-- ── Scan Button ── -->
-  <button class="tri-scan-btn" id="btn-scan">
-    <img src="icons/scan.png" class="tri-scan-icon" alt="">
-    <span>SCAN REGION</span>
-  </button>
-
-  <!-- ── Footer Status ── -->
-  <div class="tri-footer">
-    <div class="tri-status" id="tri-status">
-      <span class="tri-status-dot offline"></span>
-      <span class="tri-status-text">Checking server...</span>
+    <!-- ── Scan Button ── -->
+    <div class="tri-action-wrap">
+      <button class="tri-scan-btn" id="btn-scan">
+        <svg class="tri-scan-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+          <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+          <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+          <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+          <line x1="7" y1="12" x2="17" y2="12"></line>
+        </svg>
+        <span>SCAN REGION</span>
+      </button>
+      <div class="tri-scan-tip">Click & drag across any face or media to inspect</div>
     </div>
-    <span class="tri-version">v2.0</span>
+
+    <!-- ── Footer Status ── -->
+    <footer class="tri-footer">
+      <div class="tri-status" id="tri-status">
+        <span class="tri-status-dot offline"></span>
+        <span class="tri-status-text">Checking server...</span>
+      </div>
+      <div class="tri-esc-badge">ESC to cancel</div>
+    </footer>
   </div>
 
   <script src="popup.js"></script>

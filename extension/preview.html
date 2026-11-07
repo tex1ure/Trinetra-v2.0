@@ -3,136 +3,291 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trinetra Extension — Silk UI Preview</title>
+  <title>Trinetra Extension — Modern White Theme Preview</title>
   <link rel="stylesheet" href="content.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0a0a0b;
+      background: #F1F5F9;
       font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      color: #0F172A;
+    }
+    
+    .preview-toolbar {
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow-x: hidden;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
     }
-    /* Remove fixed positioning for preview */
-    .trinetra-modal {
+
+    .preview-toolbar span {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #64748B;
+      text-transform: uppercase;
+    }
+
+    .preview-btn {
+      padding: 6px 14px;
+      border-radius: 100px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: #0F172A;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .preview-btn:hover {
+      background: #F8FAFC;
+      border-color: #94A3B8;
+    }
+
+    .preview-btn.active {
+      background: #0F172A;
+      color: #FFFFFF;
+      border-color: #0F172A;
+    }
+
+    .preview-container {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 40px;
+      width: 100%;
+      max-width: 1060px;
+    }
+
+    .preview-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .column-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #64748B;
+      margin-bottom: 12px;
+    }
+
+    /* Container for modal preview */
+    .modal-wrap {
+      width: 530px;
+    }
+
+    .popup-frame-wrap {
+      width: 360px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.08);
+      background: #FFFFFF;
+    }
+
+    .popup-frame-wrap iframe {
+      width: 360px;
+      height: 380px;
+      border: none;
+      display: block;
+    }
+
+    .trinetra-modal-preview {
       position: relative;
       width: 100%;
-      height: auto;
-      min-height: 100vh;
     }
   </style>
 </head>
 <body>
 
-<div class="trinetra-modal" style="animation: none;">
-  <div class="trinetra-modal-content" style="animation-delay: 0s; transform: scale(1) translateY(0);">
-    <div class="trinetra-modal-inner">
+  <div class="preview-toolbar">
+    <span>White Theme Mode:</span>
+    <button class="preview-btn active" id="btn-show-fake">Verdict: FAKE</button>
+    <button class="preview-btn" id="btn-show-real">Verdict: REAL</button>
+  </div>
 
-      <!-- HEADER -->
-      <div class="trinetra-header" style="animation-delay: 0s;">
-        <div class="trinetra-brand-group">
-          <span class="trinetra-brand">TRINETRA <span>// V2</span></span>
-          <span class="trinetra-hindi-sub">त्रिनेत्र — सत्य का तीसरा नेत्र</span>
-        </div>
-        <div class="trinetra-header-right">
-          <span class="trinetra-latency">142ms</span>
-          <div class="trinetra-close">✕</div>
-        </div>
+  <div class="preview-container">
+    <!-- Extension Popup Preview -->
+    <div class="preview-column">
+      <div class="column-title">Extension Popup (White Theme)</div>
+      <div class="popup-frame-wrap">
+        <iframe src="popup.html"></iframe>
       </div>
+    </div>
 
-      <!-- CONFIDENCE GAUGE -->
-      <div class="trinetra-gauge-container" style="animation-delay: 0s;">
-        <svg class="trinetra-gauge-svg" viewBox="0 0 200 120">
-          <defs>
-            <filter id="trinetra-gauge-glow">
-              <feGaussianBlur stdDeviation="3" result="blur"/>
-              <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          <path class="trinetra-gauge-track"
-                d="M 20 100 A 80 80 0 0 1 180 100" />
-          <path class="trinetra-gauge-fill"
-                d="M 20 100 A 80 80 0 0 1 180 100"
-                stroke="var(--fake-color)"
-                stroke-dasharray="251.33"
-                stroke-dashoffset="25.133"
-                filter="url(#trinetra-gauge-glow)" />
-          <text class="trinetra-gauge-value" x="100" y="78">90.0</text>
-          <text class="trinetra-gauge-unit" x="100" y="96">CONFIDENCE</text>
-        </svg>
-      </div>
+    <!-- Forensic In-Page Modal Preview -->
+    <div class="preview-column">
+      <div class="column-title">Forensic Scan Modal (White Theme)</div>
+      <div class="modal-wrap">
+        <div class="trinetra-modal-preview">
+          <div class="trinetra-modal-content" style="transform: none; animation: none;">
+            <div class="trinetra-modal-inner">
 
-      <!-- VERDICT -->
-      <div class="trinetra-verdict-main status-fake" style="animation-delay: 0s;">
-        <div class="trinetra-yantra-tl"></div>
-        <div class="trinetra-yantra-tr"></div>
-        <div class="trinetra-yantra-bl"></div>
-        <div class="trinetra-yantra-br"></div>
-        <div class="trinetra-verdict-label">FAKE</div>
-        <div class="trinetra-verdict-sub">CONSOLIDATED FORENSIC VERDICT</div>
-        <div class="trinetra-verdict-hindi">संदिग्ध — छेड़छाड़ का संकेत</div>
-      </div>
+              <!-- HEADER -->
+              <div class="trinetra-header">
+                <div class="trinetra-brand-group">
+                  <span class="trinetra-brand">TRINETRA <span>// V2</span></span>
+                  <span class="trinetra-hindi-sub">त्रिनेत्र — सत्य का तीसरा नेत्र</span>
+                </div>
+                <div class="trinetra-header-right">
+                  <span class="trinetra-latency">142ms</span>
+                  <div class="trinetra-close">✕</div>
+                </div>
+              </div>
 
-      <!-- FACE + GRADCAM -->
-      <div class="trinetra-visuals-row status-fake-parent" style="animation-delay: 0s;">
-        <div class="trinetra-visual-card">
-          <div class="trinetra-visual-card-label">Source Extraction</div>
-          <div class="trinetra-face-crop-wrap">
-            <div class="trinetra-no-face">No Face<br/>Detected</div>
+              <!-- CONFIDENCE GAUGE -->
+              <div class="trinetra-gauge-container">
+                <svg class="trinetra-gauge-svg" viewBox="0 0 200 120">
+                  <path class="trinetra-gauge-track" d="M 20 100 A 80 80 0 0 1 180 100" />
+                  <path class="trinetra-gauge-fill" id="gauge-fill"
+                        d="M 20 100 A 80 80 0 0 1 180 100"
+                        stroke="var(--fake-color)"
+                        stroke-dasharray="251.33"
+                        stroke-dashoffset="25.133" />
+                  <text class="trinetra-gauge-value" id="gauge-val" x="100" y="78">90.0%</text>
+                  <text class="trinetra-gauge-unit" x="100" y="96">CONFIDENCE</text>
+                </svg>
+              </div>
+
+              <!-- VERDICT -->
+              <div class="trinetra-verdict-main status-fake" id="verdict-banner">
+                <div class="trinetra-yantra-tl"></div>
+                <div class="trinetra-yantra-tr"></div>
+                <div class="trinetra-yantra-bl"></div>
+                <div class="trinetra-yantra-br"></div>
+                <div style="text-align: center;">
+                  <div class="trinetra-verdict-label" id="verdict-label">FAKE</div>
+                  <div class="trinetra-verdict-sub">CONSOLIDATED FORENSIC VERDICT</div>
+                  <div class="trinetra-verdict-hindi" id="verdict-hindi">संदिग्ध — छेड़छाड़ का संकेत</div>
+                </div>
+              </div>
+
+              <!-- VISUALS ROW -->
+              <div class="trinetra-visuals-row status-fake-parent" id="visuals-row">
+                <div class="trinetra-visual-card">
+                  <div class="trinetra-visual-card-label">Source Extraction</div>
+                  <div class="trinetra-face-crop-wrap">
+                    <div class="trinetra-face-crop-circle">
+                      <img src="icons/icon128.png" alt="Sample Face" style="background:#f8fafc; padding: 10px; object-fit: contain;" />
+                    </div>
+                  </div>
+                </div>
+                <div class="trinetra-visual-card">
+                  <div class="trinetra-visual-card-label">Grad-CAM Heatmap</div>
+                  <div class="trinetra-gradcam-wrap">
+                    <img class="trinetra-gradcam-img" src="icons/logo.png" alt="Heatmap preview" style="max-height: 90px; object-fit: contain;" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- STATS GRID -->
+              <div class="trinetra-results-grid">
+                <div class="trinetra-result-cell">
+                  <span class="trinetra-label">LOCAL MODEL ⬥ HYBRID</span>
+                  <span class="trinetra-value fake-text" id="local-val">FAKE (90.0%)</span>
+                </div>
+                <div class="trinetra-result-cell">
+                  <span class="trinetra-label">RD CLOUD</span>
+                  <span class="trinetra-value muted">DISABLED</span>
+                </div>
+              </div>
+
+              <!-- SUMMARY -->
+              <div class="trinetra-summary" id="summary-text">
+                Forensic analysis detected significant manipulation artifacts. The local EfficientNet-V2-S + Transformer hybrid model flagged anomalous spatial-frequency patterns consistent with synthetic generation.
+              </div>
+
+              <!-- ACTIONS -->
+              <div class="trinetra-actions">
+                <button class="trinetra-btn" id="demo-copy-btn">
+                  <span class="trinetra-btn-icon">📋</span> Copy Report
+                </button>
+                <button class="trinetra-btn" id="demo-history-btn">
+                  <span class="trinetra-btn-icon">📜</span> History
+                </button>
+                <div class="trinetra-actions-spacer"></div>
+              </div>
+
+              <!-- FOOTER -->
+              <div class="trinetra-footer">
+                <div class="trinetra-footer-source">
+                  <span class="trinetra-footer-source-dot online"></span>
+                  LOCAL ENGINE
+                </div>
+                <div class="trinetra-footer-esc">Esc to close</div>
+              </div>
+
+            </div>
           </div>
         </div>
-        <div class="trinetra-visual-card">
-          <div class="trinetra-visual-card-label">Grad-CAM Heatmap</div>
-          <div class="trinetra-no-gradcam">No heatmap<br/>available</div>
-        </div>
       </div>
-
-      <!-- STATS -->
-      <div class="trinetra-results-grid" style="animation-delay: 0s;">
-        <div class="trinetra-result-cell">
-          <span class="trinetra-label">LOCAL MODEL ⬥ HYBRID</span>
-          <span class="trinetra-value fake-text">FAKE (90.0%)</span>
-        </div>
-        <div class="trinetra-result-cell">
-          <span class="trinetra-label">RD CLOUD</span>
-          <span class="trinetra-value muted">DISABLED</span>
-        </div>
-      </div>
-
-      <!-- SUMMARY -->
-      <div class="trinetra-summary" style="animation-delay: 0s;">
-        Forensic analysis detected significant manipulation artifacts. The local EfficientNet-V2-S + Transformer hybrid model flagged anomalous spatial-temporal patterns consistent with AI-generated imagery. Confidence score exceeds threshold — treat as potentially manipulated evidence requiring further verification.
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="trinetra-actions" style="animation-delay: 0s;">
-        <button class="trinetra-btn" id="trinetra-copy-btn">
-          <span class="trinetra-btn-icon">📋</span> Copy Report
-        </button>
-        <button class="trinetra-btn" id="trinetra-history-btn">
-          <span class="trinetra-btn-icon">📜</span> History
-        </button>
-        <div class="trinetra-actions-spacer"></div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="trinetra-footer" style="animation-delay: 0s;">
-        <div class="trinetra-footer-source">
-          <span class="trinetra-footer-source-dot offline"></span>
-          LOCAL ENGINE
-        </div>
-        <div class="trinetra-footer-esc">Esc to close</div>
-      </div>
-
     </div>
   </div>
-</div>
 
+  <script>
+    const btnFake = document.getElementById('btn-show-fake');
+    const btnReal = document.getElementById('btn-show-real');
+    const verdictBanner = document.getElementById('verdict-banner');
+    const verdictLabel = document.getElementById('verdict-label');
+    const verdictHindi = document.getElementById('verdict-hindi');
+    const visualsRow = document.getElementById('visuals-row');
+    const gaugeFill = document.getElementById('gauge-fill');
+    const gaugeVal = document.getElementById('gauge-val');
+    const localVal = document.getElementById('local-val');
+    const summaryText = document.getElementById('summary-text');
+    const copyBtn = document.getElementById('demo-copy-btn');
+
+    btnFake.addEventListener('click', () => {
+      btnFake.classList.add('active');
+      btnReal.classList.remove('active');
+      verdictBanner.className = 'trinetra-verdict-main status-fake';
+      verdictLabel.textContent = 'FAKE';
+      verdictHindi.textContent = 'संदिग्ध — छेड़छाड़ का संकेत';
+      visualsRow.className = 'trinetra-visuals-row status-fake-parent';
+      gaugeFill.setAttribute('stroke', 'var(--fake-color)');
+      gaugeFill.setAttribute('stroke-dashoffset', '25.133');
+      gaugeVal.textContent = '90.0%';
+      localVal.textContent = 'FAKE (90.0%)';
+      localVal.className = 'trinetra-value fake-text';
+      summaryText.textContent = 'Forensic analysis detected significant manipulation artifacts. The local EfficientNet-V2-S + Transformer hybrid model flagged anomalous spatial-frequency patterns consistent with synthetic generation.';
+    });
+
+    btnReal.addEventListener('click', () => {
+      btnReal.classList.add('active');
+      btnFake.classList.remove('active');
+      verdictBanner.className = 'trinetra-verdict-main status-real';
+      verdictLabel.textContent = 'REAL';
+      verdictHindi.textContent = 'प्रामाणिक — कोई छेड़छाड़ नहीं';
+      visualsRow.className = 'trinetra-visuals-row status-real-parent';
+      gaugeFill.setAttribute('stroke', 'var(--real-color)');
+      gaugeFill.setAttribute('stroke-dashoffset', '12.5');
+      gaugeVal.textContent = '95.0%';
+      localVal.textContent = 'REAL (95.0%)';
+      localVal.className = 'trinetra-value real-text';
+      summaryText.textContent = 'Analysis concluded no significant deepfake artifacts or AI manipulation. Sensor noise and frequency coherence conform to authentic digital photography standards.';
+    });
+
+    copyBtn.addEventListener('click', () => {
+      copyBtn.classList.add('success');
+      copyBtn.innerHTML = `<span class="trinetra-btn-icon">✓</span> Copied!`;
+      setTimeout(() => {
+        copyBtn.classList.remove('success');
+        copyBtn.innerHTML = `<span class="trinetra-btn-icon">📋</span> Copy Report`;
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
